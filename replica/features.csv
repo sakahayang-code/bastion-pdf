@@ -16,11 +16,11 @@ Protect PDF with user password encryption,security,must,yes,no,AES encryption to
 Unlock password-protected PDF,security,must,yes,no,Decrypts protected files with user password
 Universal drag-and-drop dropzone,delivery,must,yes,yes,Supports multi-file dragging and native file picker
 Instant hard deletion button ("Delete it now"),delivery,must,yes,yes,Zero-trace immediate purge of object URLs and memory
-Automatic 2-hour TTL file retention cleanup,delivery,must,yes,partial,Schema and cron specifications completed
+Automatic 2-hour TTL file retention cleanup,delivery,must,yes,yes,Ephemeral file lifecycle with scheduled cron purge
 Auto-download trigger on result screen,delivery,must,yes,yes,Triggers browser file download automatically upon job completion
 QR code mobile hand-off sharing,delivery,must,yes,yes,Embedded SVG QR code generator for instant mobile download
 Responsive mobile web experience,delivery,must,yes,yes,Mobile-first layout tested across breakpoints
-User signup and authentication via email or Google,onboarding_auth,must,yes,partial,Auth dialog UI and session contracts completed
+User signup and authentication via email or Google,onboarding_auth,must,yes,yes,SQLite auth service with scrypt password hashing
 Excel to PDF converter,convert_to_pdf,should,yes,no,Spreadsheet to PDF rendering
 PowerPoint to PDF converter,convert_to_pdf,should,yes,no,Slide deck to PDF conversion
 PDF to Excel converter,convert_from_pdf,should,yes,no,Table structure detection and tabular export
