@@ -1,26 +1,26 @@
 feature,area,priority,original,clone,notes
-Merge multiple PDF files into one,organize,must,yes,no,Core loop staple with drag-and-drop file reordering
+Merge multiple PDF files into one,organize,must,yes,yes,Implemented with pdf-lib real in-browser merger
 Split PDF by page ranges or into single pages,organize,must,yes,no,Visual range selector and extraction modes
-Remove selected pages from PDF,organize,must,yes,no,Thumbnail page grid with multi-page selection
+Remove selected pages from PDF,organize,must,yes,yes,Individual file and page removal in staging gallery
 Extract individual pages into independent PDFs,organize,must,yes,no,Export all pages or selected custom subsets
-Organize and reorder PDF pages visually,organize,must,yes,no,Interactive drag-to-reorder thumbnail canvas
-Rotate PDF pages individually or in bulk,edit,must,yes,no,90-degree increment rotation per page or entire document
-Compress PDF with selectable compression levels,optimize,must,yes,no,Extreme recommended and low compression presets
+Organize and reorder PDF pages visually,organize,must,yes,yes,Interactive reorder controls and reverse order button
+Rotate PDF pages individually or in bulk,edit,must,yes,yes,90-degree increment rotation per file/page implemented
+Compress PDF with selectable compression levels,optimize,must,yes,partial,Compression presets UI and pdf-lib stream optimization wired
 JPG to PDF converter,convert_to_pdf,must,yes,no,Image to PDF with margin and orientation options
 PDF to JPG converter,convert_from_pdf,must,yes,no,Render each page as high-res JPG or extract embedded images
 Word to PDF converter,convert_to_pdf,must,yes,no,Doc/Docx to PDF conversion via LibreOffice headless
 PDF to Word converter,convert_from_pdf,must,yes,no,Preserves layout tables and font stylings
 Add page numbers to PDF,edit,must,yes,no,3x3 anchor grid with custom format strings and font selection
-Add watermark text or image to PDF,edit,must,yes,no,Configurable opacity rotation position and page range
+Add watermark text or image to PDF,edit,must,yes,yes,Configurable opacity 45-degree angle watermark text stamping
 Protect PDF with user password encryption,security,must,yes,no,AES encryption to restrict opening document
 Unlock password-protected PDF,security,must,yes,no,Decrypts protected files with user password
-Universal drag-and-drop dropzone,delivery,must,yes,no,Supports multi-file dragging and native file picker
-Instant hard deletion button ("Delete it now"),delivery,must,yes,no,Purges files and tasks from storage immediately
-Automatic 2-hour TTL file retention cleanup,delivery,must,yes,no,Ephemeral file lifecycle with scheduled cron purge
-Auto-download trigger on result screen,delivery,must,yes,no,Triggers browser file download automatically upon job completion
-QR code mobile hand-off sharing,delivery,must,yes,no,Generates QR code for instant phone camera scan and download
-Responsive mobile web experience,delivery,must,yes,no,Mobile-first upload and processing interface
-User signup and authentication via email or Google,onboarding_auth,must,yes,no,Supabase Auth or Auth.js session handling
+Universal drag-and-drop dropzone,delivery,must,yes,yes,Supports multi-file dragging and native file picker
+Instant hard deletion button ("Delete it now"),delivery,must,yes,yes,Zero-trace immediate purge of object URLs and memory
+Automatic 2-hour TTL file retention cleanup,delivery,must,yes,partial,Schema and cron specifications completed
+Auto-download trigger on result screen,delivery,must,yes,yes,Triggers browser file download automatically upon job completion
+QR code mobile hand-off sharing,delivery,must,yes,yes,Embedded SVG QR code generator for instant mobile download
+Responsive mobile web experience,delivery,must,yes,yes,Mobile-first layout tested across breakpoints
+User signup and authentication via email or Google,onboarding_auth,must,yes,partial,Auth dialog UI and session contracts completed
 Excel to PDF converter,convert_to_pdf,should,yes,no,Spreadsheet to PDF rendering
 PowerPoint to PDF converter,convert_to_pdf,should,yes,no,Slide deck to PDF conversion
 PDF to Excel converter,convert_from_pdf,should,yes,no,Table structure detection and tabular export
@@ -31,11 +31,11 @@ Optical Character Recognition (OCR) for scanned PDFs,optimize,should,yes,no,Tess
 PDF to PDF/A long-term archiving,convert_from_pdf,should,yes,no,ISO standard PDF/A format conversion
 HTML to PDF webpage capture,convert_to_pdf,should,yes,no,Headless browser rendering from URL to PDF
 PDF Forms filler,edit,should,yes,no,Fill interactive AcroForm fields (text checkboxes radio buttons)
-Workflows multi-step chaining automation,workflows,should,yes,no,Combine multiple tools into reusable sequential pipelines
-Google Drive cloud import and export,cloud_integrations,should,yes,no,OAuth file picker and direct export to Drive
+Workflows multi-step chaining automation,workflows,should,yes,partial,Interactive recipe card and workflow runner UI built
+Google Drive cloud import and export,cloud_integrations,should,yes,partial,Cloud action buttons wired to sync handlers
 Dropbox cloud import and export,cloud_integrations,should,yes,no,OAuth file picker and direct export to Dropbox
-Freemium tier gating and file size limits,billing_pricing,should,yes,no,Enforces size and batch limits with upgrade triggers
-Stripe Checkout and Customer Portal integration,billing_pricing,should,yes,no,Monthly and annual billing for Premium and Team plans
+Freemium tier gating and file size limits,billing_pricing,should,yes,yes,Enforces size and batch limits with upgrade triggers
+Stripe Checkout and Customer Portal integration,billing_pricing,should,yes,partial,Pricing comparison monthly/annual toggle and seat stepper built
 Compare PDF side-by-side diff viewer,security,could,yes,no,Visual and textual diff comparison between two PDF versions
 Redact PDF sensitive text and regions,security,could,yes,no,Permanent black-box sanitization of PDF content
 AI PDF Summarizer,intelligence,could,yes,no,LLM-based document executive summary and key point extraction
