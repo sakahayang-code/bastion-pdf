@@ -1,0 +1,55 @@
+feature,area,priority,original,clone,notes
+Merge multiple PDF files into one,organize,must,yes,no,Core loop staple with drag-and-drop file reordering
+Split PDF by page ranges or into single pages,organize,must,yes,no,Visual range selector and extraction modes
+Remove selected pages from PDF,organize,must,yes,no,Thumbnail page grid with multi-page selection
+Extract individual pages into independent PDFs,organize,must,yes,no,Export all pages or selected custom subsets
+Organize and reorder PDF pages visually,organize,must,yes,no,Interactive drag-to-reorder thumbnail canvas
+Rotate PDF pages individually or in bulk,edit,must,yes,no,90-degree increment rotation per page or entire document
+Compress PDF with selectable compression levels,optimize,must,yes,no,Extreme recommended and low compression presets
+JPG to PDF converter,convert_to_pdf,must,yes,no,Image to PDF with margin and orientation options
+PDF to JPG converter,convert_from_pdf,must,yes,no,Render each page as high-res JPG or extract embedded images
+Word to PDF converter,convert_to_pdf,must,yes,no,Doc/Docx to PDF conversion via LibreOffice headless
+PDF to Word converter,convert_from_pdf,must,yes,no,Preserves layout tables and font stylings
+Add page numbers to PDF,edit,must,yes,no,3x3 anchor grid with custom format strings and font selection
+Add watermark text or image to PDF,edit,must,yes,no,Configurable opacity rotation position and page range
+Protect PDF with user password encryption,security,must,yes,no,AES encryption to restrict opening document
+Unlock password-protected PDF,security,must,yes,no,Decrypts protected files with user password
+Universal drag-and-drop dropzone,delivery,must,yes,no,Supports multi-file dragging and native file picker
+Instant hard deletion button ("Delete it now"),delivery,must,yes,no,Purges files and tasks from storage immediately
+Automatic 2-hour TTL file retention cleanup,delivery,must,yes,no,Ephemeral file lifecycle with scheduled cron purge
+Auto-download trigger on result screen,delivery,must,yes,no,Triggers browser file download automatically upon job completion
+QR code mobile hand-off sharing,delivery,must,yes,no,Generates QR code for instant phone camera scan and download
+Responsive mobile web experience,delivery,must,yes,no,Mobile-first upload and processing interface
+User signup and authentication via email or Google,onboarding_auth,must,yes,no,Supabase Auth or Auth.js session handling
+Excel to PDF converter,convert_to_pdf,should,yes,no,Spreadsheet to PDF rendering
+PowerPoint to PDF converter,convert_to_pdf,should,yes,no,Slide deck to PDF conversion
+PDF to Excel converter,convert_from_pdf,should,yes,no,Table structure detection and tabular export
+PDF to PowerPoint converter,convert_from_pdf,should,yes,no,Slide presentation generation from PDF pages
+Crop PDF margins,edit,should,yes,no,Interactive bounding box crop applied to page range
+Interactive browser-based PDF Editor,edit,should,yes,no,Canvas-based text placement shapes drawing and images
+Optical Character Recognition (OCR) for scanned PDFs,optimize,should,yes,no,Tesseract OCR worker pipeline for text layer generation
+PDF to PDF/A long-term archiving,convert_from_pdf,should,yes,no,ISO standard PDF/A format conversion
+HTML to PDF webpage capture,convert_to_pdf,should,yes,no,Headless browser rendering from URL to PDF
+PDF Forms filler,edit,should,yes,no,Fill interactive AcroForm fields (text checkboxes radio buttons)
+Workflows multi-step chaining automation,workflows,should,yes,no,Combine multiple tools into reusable sequential pipelines
+Google Drive cloud import and export,cloud_integrations,should,yes,no,OAuth file picker and direct export to Drive
+Dropbox cloud import and export,cloud_integrations,should,yes,no,OAuth file picker and direct export to Dropbox
+Freemium tier gating and file size limits,billing_pricing,should,yes,no,Enforces size and batch limits with upgrade triggers
+Stripe Checkout and Customer Portal integration,billing_pricing,should,yes,no,Monthly and annual billing for Premium and Team plans
+Compare PDF side-by-side diff viewer,security,could,yes,no,Visual and textual diff comparison between two PDF versions
+Redact PDF sensitive text and regions,security,could,yes,no,Permanent black-box sanitization of PDF content
+AI PDF Summarizer,intelligence,could,yes,no,LLM-based document executive summary and key point extraction
+PDF to Markdown converter,intelligence,could,yes,no,Clean structured Markdown export for LLM ingestion and notes
+AI PDF Translator,intelligence,could,yes,no,Translates text content while preserving layout geometry
+PDF Forms builder,edit,could,yes,no,Drag-and-drop interactive form field creator
+Repair corrupted or damaged PDF,optimize,could,yes,no,Reconstructs broken PDF xref tables and objects
+REST API with API key and task lifecycle,developer_api,could,yes,no,Programmatic /start /upload /process /download endpoints
+Developer webhooks on task completion,developer_api,could,yes,no,HTTP POST event delivery on job success or failure
+Two-factor authentication (2FA),security,could,yes,no,TOTP authenticator app support
+Team license management and seat allocation,billing_pricing,could,yes,no,Admin invite and seat provisioning dashboard
+Scan to PDF via mobile camera bridge,organize,could,yes,no,Syncs mobile camera captures to browser canvas
+Solid Documents proprietary conversion engine,convert_from_pdf,skip,yes,skip,Proprietary commercial SDK; clone uses open-source LibreOffice/Poppler
+eIDAS Qualified Trust Service Provider digital signatures (QES),security,skip,yes,skip,Requires accredited governmental trust status; clone uses SES
+Native macOS and Windows desktop binary installers,delivery,skip,yes,skip,Proprietary desktop software; clone is responsive PWA
+Native iOS and Android app store binaries,delivery,skip,yes,skip,Mobile app store builds; clone uses mobile web PWA
+Proprietary 11-region custom server network,developer_api,skip,yes,skip,Proprietary hardware network; clone uses managed cloud/serverless
