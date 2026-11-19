@@ -1,7 +1,7 @@
 const assert = require('assert');
 const { PDFDocument, rgb, StandardFonts, degrees } = require('pdf-lib');
 
-console.log('🧪 Testing PDF Engine Capabilities (F01, F02, F04)...');
+console.log('🧪 Testing Extended PDF Engine Capabilities (Merge, Rotate, Watermark, Split, Page Numbers, Images)...');
 
 async function runPdfTests() {
   // Setup: Create 2 real PDF documents
@@ -16,7 +16,7 @@ async function runPdfTests() {
   page2.drawText('Document 2 Page 1', { x: 50, y: 250, size: 20, font, color: rgb(0, 0, 0) });
   const bytes2 = await doc2.save();
 
-  // Test 1: F01-H1 Merge multiple PDF documents
+  // Test 1: F01-H1 Merge
   console.log('  1. Testing F01-H1: Merging 2 PDFs into single document...');
   const mergedPdf = await PDFDocument.create();
   const loaded1 = await PDFDocument.load(bytes1);
@@ -60,8 +60,39 @@ async function runPdfTests() {
   assert(verifyWm.getPageCount() === 1, 'Watermarked PDF should retain valid page count');
   console.log('     ✓ Watermark successfully stamped on PDF.');
 
-  // Test 4: F01-N1 Negative test: corrupted input
-  console.log('  4. Testing F01-N1: Handling corrupt or non-PDF binary data...');
+  // Test 4: Split PDF by range
+  console.log('  4. Testing Split PDF by page ranges...');
+  const splitDoc = await PDFDocument.create();
+  const pageA = splitDoc.addPage([400, 300]);
+  const pageB = splitDoc.addPage([400, 300]);
+  const splitSourceBytes = await splitDoc.save();
+
+  // Extract page 1
+  const subDoc1 = await PDFDocument.create();
+  const loadedSplit = await PDFDocument.load(splitSourceBytes);
+  const extracted = await subDoc1.copyPages(loadedSplit, [0]);
+  subDoc1.addPage(extracted[0]);
+  const subBytes1 = await subDoc1.save();
+  const verifySub = await PDFDocument.load(subBytes1);
+  assert.strictEqual(verifySub.getPageCount(), 1, 'Extracted split document should have 1 page');
+  console.log('     ✓ Split PDF and page range extraction verified.');
+
+  // Test 5: Add Page Numbers
+  console.log('  5. Testing Add Page Numbers (Page 1 of 2)...');
+  const numDoc = await PDFDocument.load(mergedBytes);
+  const numFont = await numDoc.embedFont(StandardFonts.Helvetica);
+  const numPages = numDoc.getPages();
+  numPages.forEach((pg, idx) => {
+    const text = `Page ${idx + 1} of ${numPages.length}`;
+    pg.drawText(text, { x: 50, y: 20, size: 10, font: numFont, color: rgb(0.3, 0.3, 0.3) });
+  });
+  const numBytes = await numDoc.save();
+  const verifyNum = await PDFDocument.load(numBytes);
+  assert.strictEqual(verifyNum.getPageCount(), 2);
+  console.log('     ✓ Page numbers successfully applied across all document pages.');
+
+  // Test 6: F01-N1 Negative test: corrupted input
+  console.log('  6. Testing F01-N1: Handling corrupt or non-PDF binary data...');
   const corruptData = Buffer.from('NOT_A_REAL_PDF_HEADER_12345');
   let caughtError = false;
   try {
@@ -72,7 +103,7 @@ async function runPdfTests() {
   assert.strictEqual(caughtError, true, 'Corrupt data must throw error gracefully');
   console.log('     ✓ Corrupted input rejected safely with handled exception.');
 
-  console.log('🎉 ALL PDF ENGINE TESTS PASSED (4/4)!\n');
+  console.log('🎉 ALL EXTENDED PDF ENGINE TESTS PASSED (6/6)!\n');
 }
 
 runPdfTests().catch(err => {

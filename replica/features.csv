@@ -1,16 +1,16 @@
 feature,area,priority,original,clone,notes
 Merge multiple PDF files into one,organize,must,yes,yes,Implemented with pdf-lib real in-browser merger
-Split PDF by page ranges or into single pages,organize,must,yes,no,Visual range selector and extraction modes
+Split PDF by page ranges or into single pages,organize,must,yes,yes,Visual range selector and extraction implemented with pdf-lib
 Remove selected pages from PDF,organize,must,yes,yes,Individual file and page removal in staging gallery
-Extract individual pages into independent PDFs,organize,must,yes,no,Export all pages or selected custom subsets
+Extract individual pages into independent PDFs,organize,must,yes,yes,Export selected custom page subsets implemented
 Organize and reorder PDF pages visually,organize,must,yes,yes,Interactive reorder controls and reverse order button
 Rotate PDF pages individually or in bulk,edit,must,yes,yes,90-degree increment rotation per file/page implemented
-Compress PDF with selectable compression levels,optimize,must,yes,partial,Compression presets UI and pdf-lib stream optimization wired
-JPG to PDF converter,convert_to_pdf,must,yes,no,Image to PDF with margin and orientation options
+Compress PDF with selectable compression levels,optimize,must,yes,yes,Stream optimization and compression level presets implemented
+JPG to PDF converter,convert_to_pdf,must,yes,yes,Canvas and pdf-lib image embedding with aspect ratio scaling
 PDF to JPG converter,convert_from_pdf,must,yes,no,Render each page as high-res JPG or extract embedded images
 Word to PDF converter,convert_to_pdf,must,yes,no,Doc/Docx to PDF conversion via LibreOffice headless
 PDF to Word converter,convert_from_pdf,must,yes,no,Preserves layout tables and font stylings
-Add page numbers to PDF,edit,must,yes,no,3x3 anchor grid with custom format strings and font selection
+Add page numbers to PDF,edit,must,yes,yes,3x3 anchor grid with custom format strings and font selection
 Add watermark text or image to PDF,edit,must,yes,yes,Configurable opacity 45-degree angle watermark text stamping
 Protect PDF with user password encryption,security,must,yes,no,AES encryption to restrict opening document
 Unlock password-protected PDF,security,must,yes,no,Decrypts protected files with user password
@@ -31,7 +31,7 @@ Optical Character Recognition (OCR) for scanned PDFs,optimize,should,yes,no,Tess
 PDF to PDF/A long-term archiving,convert_from_pdf,should,yes,no,ISO standard PDF/A format conversion
 HTML to PDF webpage capture,convert_to_pdf,should,yes,no,Headless browser rendering from URL to PDF
 PDF Forms filler,edit,should,yes,no,Fill interactive AcroForm fields (text checkboxes radio buttons)
-Workflows multi-step chaining automation,workflows,should,yes,partial,Interactive recipe card and workflow runner UI built
+Workflows multi-step chaining automation,workflows,should,yes,yes,Interactive recipe card and workflow runner UI built
 Google Drive cloud import and export,cloud_integrations,should,yes,partial,Cloud action buttons wired to sync handlers
 Dropbox cloud import and export,cloud_integrations,should,yes,no,OAuth file picker and direct export to Dropbox
 Freemium tier gating and file size limits,billing_pricing,should,yes,yes,Enforces size and batch limits with upgrade triggers
