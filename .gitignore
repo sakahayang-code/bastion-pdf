@@ -6,6 +6,7 @@ dist/
 .DS_Store
 .cache/
 .local/
+sakahayang-code/
 upload/
 Screenshot_*
 data/*.db

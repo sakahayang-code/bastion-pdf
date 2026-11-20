@@ -4,8 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BastionPDF - Sovereign Client-Side Document Workstation</title>
-  <!-- Load PDF-Lib for real client-side PDF manipulation -->
-  <script src="https://unpkg.com/pdf-lib@1.17.9/dist/pdf-lib.min.js"></script>
+  <!-- Local Self-Hosted PDF-Lib Engine with Multi-CDN Resilient Fallbacks -->
+  <script src="js/pdf-lib.min.js"></script>
+  <script>
+    if (typeof PDFLib === 'undefined') {
+      var cdnScript = document.createElement('script');
+      cdnScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.9/pdf-lib.min.js';
+      document.head.appendChild(cdnScript);
+    }
+  </script>
   <style>
     :root {
       --color-bg: #ffffff;
@@ -870,10 +877,39 @@
       }
       renderStagedFiles();
       showScreen('screen-stage');
+    async function ensurePdfLib() {
+      if (typeof PDFLib !== 'undefined') return PDFLib;
+      if (typeof window.PDFLib !== 'undefined') return window.PDFLib;
+
+      const sources = [
+        'js/pdf-lib.min.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.9/pdf-lib.min.js',
+        'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.9/dist/pdf-lib.min.js',
+        'https://unpkg.com/pdf-lib@1.17.9/dist/pdf-lib.min.js'
+      ];
+
+      for (const src of sources) {
+        try {
+          await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = src;
+            script.onload = () => resolve();
+            script.onerror = () => reject();
+            document.head.appendChild(script);
+          });
+          if (typeof PDFLib !== 'undefined') return PDFLib;
+          if (typeof window.PDFLib !== 'undefined') return window.PDFLib;
+        } catch (e) {
+          // try next fallback source
+        }
+      }
+
+      throw new Error('Komponen PDF engine belum siap. Silakan muat ulang halaman atau tunggu sejenak.');
     }
 
     async function generateSamplePdfs() {
-      const { PDFDocument, rgb, StandardFonts } = PDFLib;
+      const lib = await ensurePdfLib();
+      const { PDFDocument, rgb, StandardFonts } = lib;
       
       const doc1 = await PDFDocument.create();
       const font = await doc1.embedFont(StandardFonts.HelveticaBold);
@@ -973,7 +1009,8 @@
       percentEl.innerText = '25%';
 
       try {
-        const { PDFDocument, degrees, StandardFonts, rgb } = PDFLib;
+        const lib = await ensurePdfLib();
+        const { PDFDocument, degrees, StandardFonts, rgb } = lib;
         let finalPdfBytes = null;
 
         if (currentTool === 'merge') {
@@ -989,7 +1026,7 @@
             });
           }
           finalPdfBytes = await mergedPdf.save({ useObjectStreams: true });
-          processedFilename = `replica_merged_${Date.now()}.pdf`;
+          processedFilename = `bastion_merged_${Date.now()}.pdf`;
 
         } else if (currentTool === 'split') {
           barFill.style.width = '60%';
@@ -1004,7 +1041,7 @@
           const copied = await subDoc.copyPages(doc, [targetIndex]);
           subDoc.addPage(copied[0]);
           finalPdfBytes = await subDoc.save();
-          processedFilename = `replica_split_page_${targetIndex + 1}.pdf`;
+          processedFilename = `bastion_split_page_${targetIndex + 1}.pdf`;
 
         } else if (currentTool === 'page_numbers') {
           barFill.style.width = '60%';
@@ -1026,7 +1063,7 @@
             page.drawText(text, { x, y, size: 10, font, color: rgb(0.3, 0.3, 0.3) });
           });
           finalPdfBytes = await doc.save();
-          processedFilename = `replica_numbered_${Date.now()}.pdf`;
+          processedFilename = `bastion_numbered_${Date.now()}.pdf`;
 
         } else if (currentTool === 'watermark') {
           barFill.style.width = '60%';
@@ -1048,13 +1085,13 @@
             });
           }
           finalPdfBytes = await doc.save();
-          processedFilename = `replica_watermarked_${Date.now()}.pdf`;
+          processedFilename = `bastion_watermarked_${Date.now()}.pdf`;
 
         } else {
           // Default optimization pass
           const doc = await PDFDocument.load(stagedFiles[0].buffer);
           finalPdfBytes = await doc.save({ useObjectStreams: true });
-          processedFilename = `replica_processed_${Date.now()}.pdf`;
+          processedFilename = `bastion_processed_${Date.now()}.pdf`;
         }
 
         barFill.style.width = '100%';
