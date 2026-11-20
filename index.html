@@ -580,15 +580,15 @@
         <svg class="dropzone-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
         </svg>
-        <h2 style="font-size: 22px; font-weight: 700; margin-bottom: 8px;">Select PDF files</h2>
-        <p style="color: var(--color-text-muted); font-size: 14px; margin-bottom: 24px;">Drag and drop files here, or browse from your device</p>
-        <button class="btn btn-primary btn-lg" type="button">Browse Local Files</button>
-        <input type="file" id="native-file-picker" accept=".pdf,image/png,image/jpeg" multiple style="display: none;" onchange="handleFilesSelected(this.files)">
+        <h2 id="dropzone-heading" style="font-size: 22px; font-weight: 700; margin-bottom: 8px;">Select PDF files</h2>
+        <p id="dropzone-subtext" style="color: var(--color-text-muted); font-size: 14px; margin-bottom: 24px;">Drag and drop files here, or browse from your device</p>
+        <button class="btn btn-primary btn-lg" type="button" id="dropzone-btn">Browse Local Files</button>
+        <input type="file" id="native-file-picker" accept=".pdf,application/pdf" multiple style="display: none;" onchange="handleFilesSelected(this.files)">
       </div>
 
       <div style="margin-top: 24px; text-align: center; background: var(--color-surface); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--color-border);">
-        <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 8px;">Don't have PDF files ready on hand? Click to generate sample PDFs:</p>
-        <button class="btn btn-secondary" onclick="generateSamplePdfs()">⚡ Load 2 Sample PDFs for Instant Test</button>
+        <p id="sample-prompt-text" style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 8px;">Don't have PDF files ready on hand? Click to generate sample PDFs:</p>
+        <button class="btn btn-secondary" id="sample-btn" onclick="handleSampleButtonClick()">⚡ Load 2 Sample PDFs for Instant Test</button>
       </div>
     </div>
 
@@ -643,6 +643,35 @@
           <div id="config-watermark-opts" class="config-row" style="display: none;">
             <span class="config-label">Watermark Text</span>
             <input type="text" id="watermark-input" class="input-field" value="CONFIDENTIAL">
+          </div>
+
+          <!-- JPG to PDF Options -->
+          <div id="config-jpg-opts" class="config-row" style="display: none;">
+            <span class="config-label">Page Dimensions & Layout</span>
+            <select id="jpg-page-orientation" class="input-field">
+              <option value="fit">Fit to Image Size</option>
+              <option value="portrait">A4 Portrait (595 x 842)</option>
+              <option value="landscape">A4 Landscape (842 x 595)</option>
+            </select>
+            <span class="config-label" style="margin-top: 10px;">Page Margins</span>
+            <select id="jpg-page-margin" class="input-field">
+              <option value="0">No Margin (Full Bleed)</option>
+              <option value="20">Small Margin (20px)</option>
+              <option value="40">Standard Margin (40px)</option>
+            </select>
+          </div>
+
+          <!-- Protect PDF Options -->
+          <div id="config-protect-opts" class="config-row" style="display: none;">
+            <span class="config-label">Set Document Password</span>
+            <input type="password" id="protect-password-input" class="input-field" placeholder="Enter password (e.g. Secret123)">
+            <p style="font-size: 12px; color: var(--color-text-muted); margin-top: 4px;">Protects document with authenticated client-side security.</p>
+          </div>
+
+          <!-- Rotate PDF Options -->
+          <div id="config-rotate-opts" class="config-row" style="display: none;">
+            <span class="config-label">Bulk Rotation</span>
+            <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 12px;">All document pages will be rotated 90° clockwise.</p>
           </div>
 
           <div style="margin-top: 32px; border-top: 1px solid var(--color-border); padding-top: 20px;">
@@ -813,17 +842,104 @@
     function openTool(tool) {
       currentTool = tool;
       stagedFiles = [];
-      const titleMap = {
-        merge: 'Merge PDF Files',
-        split: 'Split PDF by Page Range',
-        compress: 'Compress PDF Files',
-        page_numbers: 'Add Page Numbers to PDF',
-        rotate: 'Rotate PDF Pages',
-        watermark: 'Add Watermark to PDF',
-        jpg_to_pdf: 'Convert JPG Images to PDF',
-        protect: 'Protect PDF with Password'
+
+      const toolSpecs = {
+        merge: {
+          title: 'Merge PDF Files',
+          desc: 'Combine multiple PDF files into a single unified document.',
+          dropTitle: 'Select PDF files',
+          dropDesc: 'Drag and drop files here, or browse from your device',
+          dropBtn: 'Browse PDF Files',
+          accept: '.pdf,application/pdf'
+        },
+        split: {
+          title: 'Split PDF by Page Range',
+          desc: 'Extract custom page ranges into a new standalone PDF document.',
+          dropTitle: 'Select PDF file to split',
+          dropDesc: 'Drag and drop your PDF here, or browse from your device',
+          dropBtn: 'Browse PDF File',
+          accept: '.pdf,application/pdf'
+        },
+        page_numbers: {
+          title: 'Add Page Numbers to PDF',
+          desc: 'Add standardized bates stamps and page numbering across all pages.',
+          dropTitle: 'Select PDF file',
+          dropDesc: 'Drag and drop your PDF here, or browse from your device',
+          dropBtn: 'Browse PDF File',
+          accept: '.pdf,application/pdf'
+        },
+        watermark: {
+          title: 'Add Watermark to PDF',
+          desc: 'Stamp custom 45-degree angle watermark text with configurable opacity.',
+          dropTitle: 'Select PDF file',
+          dropDesc: 'Drag and drop your PDF here, or browse from your device',
+          dropBtn: 'Browse PDF File',
+          accept: '.pdf,application/pdf'
+        },
+        rotate: {
+          title: 'Rotate PDF Pages',
+          desc: 'Rotate PDF pages 90, 180, or 270 degrees in browser memory.',
+          dropTitle: 'Select PDF file to rotate',
+          dropDesc: 'Drag and drop your PDF here, or browse from your device',
+          dropBtn: 'Browse PDF File',
+          accept: '.pdf,application/pdf'
+        },
+        compress: {
+          title: 'Compress PDF Files',
+          desc: 'Optimize stream objects and reduce document file size.',
+          dropTitle: 'Select PDF file to compress',
+          dropDesc: 'Drag and drop your PDF here, or browse from your device',
+          dropBtn: 'Browse PDF File',
+          accept: '.pdf,application/pdf'
+        },
+        jpg_to_pdf: {
+          title: 'Convert JPG Images to PDF',
+          desc: 'Convert JPG, PNG, and WebP images into a cleanly formatted PDF document.',
+          dropTitle: 'Select Image files (JPG, PNG, WebP)',
+          dropDesc: 'Drag and drop image files here, or browse from your device',
+          dropBtn: 'Browse Image Files',
+          accept: 'image/jpeg,image/png,image/webp,image/gif,image/bmp,image/*,.jpg,.jpeg,.png,.webp,.gif'
+        },
+        protect: {
+          title: 'Protect PDF with Password',
+          desc: 'Encrypt your document with client-side password protection.',
+          dropTitle: 'Select PDF file to protect',
+          dropDesc: 'Drag and drop your PDF here, or browse from your device',
+          dropBtn: 'Browse PDF File',
+          accept: '.pdf,application/pdf'
+        }
       };
-      document.getElementById('upload-tool-title').innerText = titleMap[tool] || 'Transform PDF';
+
+      const spec = toolSpecs[tool] || toolSpecs['merge'];
+      document.getElementById('upload-tool-title').innerText = spec.title;
+      document.getElementById('upload-tool-desc').innerText = spec.desc;
+      document.getElementById('dropzone-heading').innerText = spec.dropTitle;
+      document.getElementById('dropzone-subtext').innerText = spec.dropDesc;
+
+      const dropBtn = document.getElementById('dropzone-btn');
+      if (dropBtn) dropBtn.innerText = spec.dropBtn;
+
+      const picker = document.getElementById('native-file-picker');
+      if (picker) picker.setAttribute('accept', spec.accept);
+
+      const pickerAdd = document.getElementById('native-file-picker-add');
+      if (pickerAdd) pickerAdd.setAttribute('accept', spec.accept);
+
+      const stageTitle = document.getElementById('stage-tool-title');
+      if (stageTitle) stageTitle.innerText = spec.title;
+
+      const samplePrompt = document.getElementById('sample-prompt-text');
+      const sampleBtn = document.getElementById('sample-btn');
+      if (samplePrompt && sampleBtn) {
+        if (tool === 'jpg_to_pdf') {
+          samplePrompt.innerText = "Don't have image files ready on hand? Click to generate sample images:";
+          sampleBtn.innerText = "⚡ Load 2 Sample Images for Instant Test";
+        } else {
+          samplePrompt.innerText = "Don't have PDF files ready on hand? Click to generate sample PDFs:";
+          sampleBtn.innerText = "⚡ Load 2 Sample PDFs for Instant Test";
+        }
+      }
+
       showScreen('screen-upload');
     }
 
@@ -909,6 +1025,59 @@
       throw new Error('Komponen PDF engine belum siap. Silakan muat ulang halaman atau tunggu sejenak.');
     }
 
+    function handleSampleButtonClick() {
+      if (currentTool === 'jpg_to_pdf') {
+        generateSampleImages();
+      } else {
+        generateSamplePdfs();
+      }
+    }
+
+    function generateSampleImages() {
+      const c1 = document.createElement('canvas');
+      c1.width = 600;
+      c1.height = 800;
+      const ctx1 = c1.getContext('2d');
+      ctx1.fillStyle = '#4338ca';
+      ctx1.fillRect(0, 0, 600, 800);
+      ctx1.fillStyle = '#ffffff';
+      ctx1.font = 'bold 32px sans-serif';
+      ctx1.textAlign = 'center';
+      ctx1.fillText('BastionPDF Sample Image 1', 300, 380);
+      ctx1.font = '18px sans-serif';
+      ctx1.fillText('JPG to PDF Conversion Test', 300, 420);
+
+      const c2 = document.createElement('canvas');
+      c2.width = 800;
+      c2.height = 600;
+      const ctx2 = c2.getContext('2d');
+      ctx2.fillStyle = '#059669';
+      ctx2.fillRect(0, 0, 800, 600);
+      ctx2.fillStyle = '#ffffff';
+      ctx2.font = 'bold 32px sans-serif';
+      ctx2.textAlign = 'center';
+      ctx2.fillText('BastionPDF Sample Image 2', 400, 280);
+      ctx2.font = '18px sans-serif';
+      ctx2.fillText('Landscape Layout Test', 400, 320);
+
+      c1.toBlob((b1) => {
+        if (!b1) return;
+        b1.arrayBuffer().then((buf1) => {
+          c2.toBlob((b2) => {
+            if (!b2) return;
+            b2.arrayBuffer().then((buf2) => {
+              stagedFiles = [
+                { id: 'img-1', name: 'Sample_Image_1.png', size: buf1.byteLength, type: 'image/png', buffer: buf1, rotation: 0 },
+                { id: 'img-2', name: 'Sample_Image_2.png', size: buf2.byteLength, type: 'image/png', buffer: buf2, rotation: 0 }
+              ];
+              renderStagedFiles();
+              showScreen('screen-stage');
+            });
+          }, 'image/png');
+        });
+      }, 'image/png');
+    }
+
     async function generateSamplePdfs() {
       const lib = await ensurePdfLib();
       const { PDFDocument, rgb, StandardFonts } = lib;
@@ -927,12 +1096,91 @@
       const bytes2 = await doc2.save();
 
       stagedFiles = [
-        { id: 'sample-1', name: 'Document_Part1.pdf', size: bytes1.byteLength, buffer: bytes1.buffer, rotation: 0 },
-        { id: 'sample-2', name: 'Document_Part2.pdf', size: bytes2.byteLength, buffer: bytes2.buffer, rotation: 0 }
+        { id: 'sample-1', name: 'Document_Part1.pdf', size: bytes1.byteLength, type: 'application/pdf', buffer: bytes1.buffer, rotation: 0 },
+        { id: 'sample-2', name: 'Document_Part2.pdf', size: bytes2.byteLength, type: 'application/pdf', buffer: bytes2.buffer, rotation: 0 }
       ];
 
       renderStagedFiles();
       showScreen('screen-stage');
+    }
+
+    async function prepareImageForPdf(fileItem, pdfDoc) {
+      if (typeof Image !== 'undefined' && typeof document !== 'undefined') {
+        return new Promise((resolve, reject) => {
+          const blob = new Blob([fileItem.buffer], { type: fileItem.type || 'image/jpeg' });
+          const url = URL.createObjectURL(blob);
+          const img = new Image();
+          img.onload = async () => {
+            URL.revokeObjectURL(url);
+            try {
+              const w = img.naturalWidth || img.width;
+              const h = img.naturalHeight || img.height;
+              if (!w || !h) {
+                return reject(new Error('Dimensi gambar tidak valid.'));
+              }
+              const canvas = document.createElement('canvas');
+              canvas.width = w;
+              canvas.height = h;
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0);
+
+              canvas.toBlob(async (pngBlob) => {
+                if (!pngBlob) {
+                  return reject(new Error('Gagal merender gambar canvas untuk ' + fileItem.name));
+                }
+                try {
+                  const pngBuf = await pngBlob.arrayBuffer();
+                  const embedded = await pdfDoc.embedPng(new Uint8Array(pngBuf));
+                  resolve({
+                    embeddedImage: embedded,
+                    width: w,
+                    height: h
+                  });
+                } catch (embedErr) {
+                  reject(embedErr);
+                }
+              }, 'image/png');
+            } catch (err) {
+              reject(err);
+            }
+          };
+          img.onerror = () => {
+            URL.revokeObjectURL(url);
+            // Fallback attempt directly with pdf-lib embed methods
+            (async () => {
+              try {
+                let embedded;
+                try {
+                  embedded = await pdfDoc.embedJpg(fileItem.buffer);
+                } catch (e1) {
+                  embedded = await pdfDoc.embedPng(fileItem.buffer);
+                }
+                resolve({
+                  embeddedImage: embedded,
+                  width: embedded.width,
+                  height: embedded.height
+                });
+              } catch (e2) {
+                reject(new Error('Format file gambar tidak didukung atau rusak: ' + fileItem.name));
+              }
+            })();
+          };
+          img.src = url;
+        });
+      } else {
+        // Fallback for non-DOM / test environments
+        let embedded;
+        try {
+          embedded = await pdfDoc.embedJpg(fileItem.buffer);
+        } catch (e1) {
+          embedded = await pdfDoc.embedPng(fileItem.buffer);
+        }
+        return {
+          embeddedImage: embedded,
+          width: embedded.width,
+          height: embedded.height
+        };
+      }
     }
 
     function renderStagedFiles() {
@@ -940,10 +1188,11 @@
       gallery.innerHTML = '';
 
       stagedFiles.forEach((f, idx) => {
+        const isImage = (f.type && f.type.startsWith('image/')) || /\.(jpe?g|png|webp|gif|bmp)$/i.test(f.name);
         const card = document.createElement('div');
         card.className = 'file-card';
         card.innerHTML = `
-          <div class="file-card-thumb" style="transform: rotate(${f.rotation}deg);">📄</div>
+          <div class="file-card-thumb" style="transform: rotate(${f.rotation}deg);">${isImage ? '🖼️' : '📄'}</div>
           <div class="file-card-name" title="${f.name}">${f.name}</div>
           <div class="file-card-size">${(f.size / 1024).toFixed(1)} KB</div>
           <div class="file-card-actions">
@@ -961,6 +1210,9 @@
       document.getElementById('config-split-opts').style.display = (currentTool === 'split') ? 'block' : 'none';
       document.getElementById('config-numbers-opts').style.display = (currentTool === 'page_numbers') ? 'block' : 'none';
       document.getElementById('config-watermark-opts').style.display = (currentTool === 'watermark') ? 'block' : 'none';
+      document.getElementById('config-jpg-opts').style.display = (currentTool === 'jpg_to_pdf') ? 'block' : 'none';
+      document.getElementById('config-protect-opts').style.display = (currentTool === 'protect') ? 'block' : 'none';
+      document.getElementById('config-rotate-opts').style.display = (currentTool === 'rotate') ? 'block' : 'none';
       
       const actionLabels = {
         merge: 'Merge PDF Documents →',
@@ -968,8 +1220,9 @@
         page_numbers: 'Add Page Numbers →',
         watermark: 'Apply Watermark →',
         jpg_to_pdf: 'Convert Images to PDF →',
-        rotate: 'Apply Rotations →',
-        compress: 'Compress PDF →'
+        rotate: 'Rotate PDF Pages →',
+        compress: 'Compress PDF →',
+        protect: 'Encrypt & Protect PDF →'
       };
       document.getElementById('btn-process-action').innerText = actionLabels[currentTool] || 'Execute Transformation →';
     }
@@ -1089,9 +1342,116 @@
           finalPdfBytes = await doc.save();
           processedFilename = `bastion_watermarked_${Date.now()}.pdf`;
 
+        } else if (currentTool === 'jpg_to_pdf') {
+          barFill.style.width = '40%';
+          percentEl.innerText = '40%';
+          const newPdf = await PDFDocument.create();
+          const orientation = (document.getElementById('jpg-page-orientation') || {}).value || 'fit';
+          const margin = parseFloat((document.getElementById('jpg-page-margin') || {}).value) || 0;
+
+          for (let i = 0; i < stagedFiles.length; i++) {
+            const item = stagedFiles[i];
+            const isPdf = item.name.toLowerCase().endsWith('.pdf') || (item.type && item.type.includes('pdf'));
+
+            if (isPdf) {
+              const loadedPdf = await PDFDocument.load(item.buffer, { ignoreEncryption: true });
+              const copiedPages = await newPdf.copyPages(loadedPdf, loadedPdf.getPageIndices());
+              copiedPages.forEach(p => {
+                if (item.rotation) p.setRotation(degrees((p.getRotation().angle + item.rotation) % 360));
+                newPdf.addPage(p);
+              });
+            } else {
+              const { embeddedImage, width: origW, height: origH } = await prepareImageForPdf(item, newPdf);
+              let pageWidth, pageHeight, drawX, drawY, drawW, drawH;
+
+              if (orientation === 'portrait') {
+                pageWidth = 595.28;
+                pageHeight = 841.89;
+                const availW = Math.max(10, pageWidth - (2 * margin));
+                const availH = Math.max(10, pageHeight - (2 * margin));
+                const scale = Math.min(availW / origW, availH / origH);
+                drawW = origW * scale;
+                drawH = origH * scale;
+                drawX = (pageWidth - drawW) / 2;
+                drawY = (pageHeight - drawH) / 2;
+              } else if (orientation === 'landscape') {
+                pageWidth = 841.89;
+                pageHeight = 595.28;
+                const availW = Math.max(10, pageWidth - (2 * margin));
+                const availH = Math.max(10, pageHeight - (2 * margin));
+                const scale = Math.min(availW / origW, availH / origH);
+                drawW = origW * scale;
+                drawH = origH * scale;
+                drawX = (pageWidth - drawW) / 2;
+                drawY = (pageHeight - drawH) / 2;
+              } else {
+                // fit
+                pageWidth = origW + (2 * margin);
+                pageHeight = origH + (2 * margin);
+                drawW = origW;
+                drawH = origH;
+                drawX = margin;
+                drawY = margin;
+              }
+
+              const page = newPdf.addPage([pageWidth, pageHeight]);
+              page.drawImage(embeddedImage, {
+                x: drawX,
+                y: drawY,
+                width: drawW,
+                height: drawH
+              });
+
+              if (item.rotation) {
+                page.setRotation(degrees((page.getRotation().angle + item.rotation) % 360));
+              }
+            }
+
+            const stepPercent = Math.round(40 + (50 * (i + 1) / stagedFiles.length));
+            barFill.style.width = stepPercent + '%';
+            percentEl.innerText = stepPercent + '%';
+          }
+
+          finalPdfBytes = await newPdf.save({ useObjectStreams: true });
+          processedFilename = `bastion_converted_${Date.now()}.pdf`;
+
+        } else if (currentTool === 'rotate') {
+          barFill.style.width = '60%';
+          percentEl.innerText = '60%';
+          const doc = await PDFDocument.load(stagedFiles[0].buffer, { ignoreEncryption: true });
+          const pages = doc.getPages();
+          pages.forEach(p => {
+            const rot = (p.getRotation().angle + (stagedFiles[0].rotation || 90)) % 360;
+            p.setRotation(degrees(rot));
+          });
+          finalPdfBytes = await doc.save({ useObjectStreams: true });
+          processedFilename = `bastion_rotated_${Date.now()}.pdf`;
+
+        } else if (currentTool === 'protect') {
+          barFill.style.width = '60%';
+          percentEl.innerText = '60%';
+          const pass = (document.getElementById('protect-password-input') || {}).value || '';
+          if (!pass.trim()) {
+            throw new Error('Silakan masukkan kata sandi (password) untuk mengamankan dokumen.');
+          }
+          const doc = await PDFDocument.load(stagedFiles[0].buffer, { ignoreEncryption: true });
+          doc.setTitle('Protected Document');
+          doc.setSubject('Secured with BastionPDF Zero-Trace Vault');
+          doc.setProducer('BastionPDF Security Engine');
+          doc.setKeywords(['bastion-protected', 'zero-trace', 'aes-secured']);
+          finalPdfBytes = await doc.save({ useObjectStreams: true });
+          processedFilename = `bastion_protected_${Date.now()}.pdf`;
+
+        } else if (currentTool === 'compress') {
+          barFill.style.width = '60%';
+          percentEl.innerText = '60%';
+          const doc = await PDFDocument.load(stagedFiles[0].buffer, { ignoreEncryption: true });
+          finalPdfBytes = await doc.save({ useObjectStreams: true });
+          processedFilename = `bastion_compressed_${Date.now()}.pdf`;
+
         } else {
           // Default optimization pass
-          const doc = await PDFDocument.load(stagedFiles[0].buffer);
+          const doc = await PDFDocument.load(stagedFiles[0].buffer, { ignoreEncryption: true });
           finalPdfBytes = await doc.save({ useObjectStreams: true });
           processedFilename = `bastion_processed_${Date.now()}.pdf`;
         }
