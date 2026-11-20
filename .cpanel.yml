@@ -4,5 +4,6 @@ deployment:
     - export DEPLOYPATH=/home/mulw1713/public_html/pdf
     - /bin/mkdir -p $DEPLOYPATH
     - /bin/cp -R * $DEPLOYPATH/
-    - /bin/cp .htaccess $DEPLOYPATH/
-    - /bin/chmod -R 775 $DEPLOYPATH/storage $DEPLOYPATH/database
+    - /bin/cp -f .htaccess $DEPLOYPATH/ 2>/dev/null || true
+    - /bin/mkdir -p $DEPLOYPATH/data/storage
+    - /bin/chmod -R 775 $DEPLOYPATH/data 2>/dev/null || true
