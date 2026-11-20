@@ -1,0 +1,21 @@
+{
+  "avoid": [
+    "iLovePDF",
+    "i Love PDF",
+    "ilovepdf",
+    "ilovepdf.com"
+  ],
+  "app_store": {
+    "name": "BastionPDF: Document Security",
+    "subtitle": "Private In-Browser PDF Tools",
+    "promotional_text": "Transform confidential documents directly on your device. Zero cloud uploads, zero tracking cookies, zero ads. Merge, split, and protect PDFs with native security.",
+    "description": "BastionPDF is a privacy-first document workstation built for professionals who handle sensitive and confidential records.\n\nUnlike traditional cloud converters that transmit your contracts, tax returns, and medical files across third-party remote servers, BastionPDF executes document transformations directly on your device using WebAssembly and client-side processing. Zero bytes leave your hardware.\n\nKEY CAPABILITIES:\n- Merge & Organize: Combine dozens of PDF documents and reorder pages effortlessly.\n- Split & Extract: Extract custom page ranges or split large documents into individual files.\n- Page Numbering: Apply standardized bates stamps and custom page headers/footers.\n- Watermarking: Protect confidential drafts with customizable text and image watermarks.\n- Instant Hard Purge: Revoke and overwrite memory buffers in a single tap for guaranteed zero-trace security.\n\nBUILT FOR PRIVACY:\n- Zero server uploads for standard operations\n- Zero tracking cookies, zero advertising networks\n- Works offline without an active internet connection\n- Ideal for HIPAA, GDPR, and confidential corporate compliance\n\nTake complete ownership of your document privacy with BastionPDF.",
+    "keywords": "merge,split,watermark,scanner,reader,editor,combine,organizer,secure,privacy,offline,pages,protect",
+    "whats_new": "Initial release of BastionPDF sovereign document workstation. Includes zero-upload client-side PDF merging, splitting, watermarking, page numbering, and instant zero-trace memory purging."
+  },
+  "google_play": {
+    "title": "BastionPDF: Document Security",
+    "short_description": "Private offline PDF tools. Merge, split, and edit files directly on device.",
+    "full_description": "BastionPDF is a privacy-first document workstation built for professionals who handle sensitive and confidential records.\n\nUnlike traditional cloud converters that transmit your contracts, tax returns, and medical files across third-party remote servers, BastionPDF executes document transformations directly on your device using WebAssembly and client-side processing. Zero bytes leave your hardware.\n\nKEY CAPABILITIES:\n- Merge & Organize: Combine dozens of PDF documents and reorder pages effortlessly.\n- Split & Extract: Extract custom page ranges or split large documents into individual files.\n- Page Numbering: Apply standardized bates stamps and custom page headers/footers.\n- Watermarking: Protect confidential drafts with customizable text and image watermarks.\n- Instant Hard Purge: Revoke and overwrite memory buffers in a single tap for guaranteed zero-trace security.\n\nBUILT FOR PRIVACY:\n- Zero server uploads for standard operations\n- Zero tracking cookies, zero advertising networks\n- Works offline without an active internet connection\n- Ideal for HIPAA, GDPR, and confidential corporate compliance\n\nTake complete ownership of your document privacy with BastionPDF."
+  }
+}
