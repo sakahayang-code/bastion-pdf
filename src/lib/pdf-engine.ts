@@ -177,3 +177,135 @@ export async function convertImagesToPdf(
 
   return await doc.save();
 }
+
+// 7. PDF to JPG Converter (Uses pdftoppm / Cairo)
+export async function convertPdfToJpg(
+  pdfBuffer: ArrayBuffer | Buffer
+): Promise<Buffer[]> {
+  const fs = await import('fs');
+  const path = await import('path');
+  const os = await import('os');
+  const { execSync } = await import('child_process');
+
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'bpdf-jpg-'));
+  const pdfPath = path.join(tmpDir, 'input.pdf');
+  const prefix = path.join(tmpDir, 'page');
+
+  try {
+    fs.writeFileSync(pdfPath, Buffer.from(pdfBuffer));
+    execSync(`pdftoppm -jpeg -r 150 "${pdfPath}" "${prefix}"`, { stdio: 'pipe' });
+
+    const jpgFiles = fs
+      .readdirSync(tmpDir)
+      .filter((f) => f.startsWith('page') && f.endsWith('.jpg'))
+      .sort();
+
+    const outputBuffers = jpgFiles.map((f) => fs.readFileSync(path.join(tmpDir, f)));
+    return outputBuffers;
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+}
+
+// 8. Security: Protect PDF with AES-256-GCM Password Encryption
+export async function protectPdfWithPassword(
+  pdfBuffer: ArrayBuffer | Buffer,
+  password: string
+): Promise<Buffer> {
+  const crypto = await import('crypto');
+  const buffer = Buffer.from(pdfBuffer);
+  const salt = crypto.randomBytes(16);
+  const key = crypto.scryptSync(password, salt, 32);
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+  const encrypted = Buffer.concat([cipher.update(buffer), cipher.final()]);
+  const tag = cipher.getAuthTag();
+
+  // Bastion PDF Encrypted Container format:
+  // MAGIC (4 bytes 'BPDF') + SALT (16) + IV (12) + TAG (16) + ENCRYPTED PAYLOAD
+  return Buffer.concat([Buffer.from('BPDF'), salt, iv, tag, encrypted]);
+}
+
+// 9. Security: Unlock AES-256 Protected PDF
+export async function unlockPdfWithPassword(
+  encryptedBuffer: ArrayBuffer | Buffer,
+  password: string
+): Promise<Buffer> {
+  const crypto = await import('crypto');
+  const buf = Buffer.from(encryptedBuffer);
+
+  if (buf.subarray(0, 4).toString() !== 'BPDF') {
+    throw new Error('Invalid protected PDF container: missing BPDF header signature');
+  }
+
+  const salt = buf.subarray(4, 20);
+  const iv = buf.subarray(20, 32);
+  const tag = buf.subarray(32, 48);
+  const ciphertext = buf.subarray(48);
+
+  const key = crypto.scryptSync(password, salt, 32);
+  const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
+  decipher.setAuthTag(tag);
+
+  return Buffer.concat([decipher.update(ciphertext), decipher.final()]);
+}
+
+// 10. Document Conversion: PDF to Word / Layout Text
+export async function convertPdfToWord(
+  pdfBuffer: ArrayBuffer | Buffer
+): Promise<{ text: string; docxMock: Buffer }> {
+  const fs = await import('fs');
+  const path = await import('path');
+  const os = await import('os');
+  const { execSync } = await import('child_process');
+
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'bpdf-word-'));
+  const pdfPath = path.join(tmpDir, 'input.pdf');
+  const txtPath = path.join(tmpDir, 'output.txt');
+
+  try {
+    fs.writeFileSync(pdfPath, Buffer.from(pdfBuffer));
+    execSync(`pdftotext -layout "${pdfPath}" "${txtPath}"`, { stdio: 'pipe' });
+    const text = fs.readFileSync(txtPath, 'utf-8');
+    // Wrap plain layout text into standardized document envelope
+    const docxMock = Buffer.from(
+      `[BastionPDF Word Export]\n\n${text}`,
+      'utf-8'
+    );
+    return { text, docxMock };
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+}
+
+// 11. Document Conversion: Word / Text to PDF
+export async function convertTextOrWordToPdf(
+  textContent: string
+): Promise<Uint8Array> {
+  const doc = await PDFDocument.create();
+  const font = await doc.embedFont(StandardFonts.Helvetica);
+  const lines = textContent.split('\n');
+
+  let currentPage = doc.addPage([595.28, 841.89]); // A4
+  let y = 800;
+  const fontSize = 11;
+  const lineHeight = 16;
+
+  for (const line of lines) {
+    if (y < 40) {
+      currentPage = doc.addPage([595.28, 841.89]);
+      y = 800;
+    }
+    // Draw line
+    currentPage.drawText(line.substring(0, 95), {
+      x: 40,
+      y,
+      size: fontSize,
+      font,
+      color: rgb(0.1, 0.1, 0.1),
+    });
+    y -= lineHeight;
+  }
+
+  return await doc.save();
+}

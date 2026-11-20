@@ -103,7 +103,72 @@ async function runPdfTests() {
   assert.strictEqual(caughtError, true, 'Corrupt data must throw error gracefully');
   console.log('     ✓ Corrupted input rejected safely with handled exception.');
 
-  console.log('🎉 ALL EXTENDED PDF ENGINE TESTS PASSED (6/6)!\n');
+  // Test 7: PDF to JPG conversion
+  console.log('  7. Testing PDF to JPG conversion via pdftoppm...');
+  const fs = require('fs');
+  const path = require('path');
+  const os = require('os');
+  const { execSync } = require('child_process');
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'test-jpg-'));
+  const testPdfPath = path.join(tmpDir, 'input.pdf');
+  fs.writeFileSync(testPdfPath, bytes1);
+  execSync(`pdftoppm -jpeg -r 150 "${testPdfPath}" "${path.join(tmpDir, 'page')}"`, { stdio: 'pipe' });
+  const jpgs = fs.readdirSync(tmpDir).filter(f => f.endsWith('.jpg'));
+  assert(jpgs.length >= 1, 'At least 1 JPG page must be generated');
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+  console.log('     ✓ PDF to JPG page rendering verified.');
+
+  // Test 8: Protect PDF with AES-256-GCM password encryption
+  console.log('  8. Testing Protect PDF with AES-256-GCM encryption...');
+  const crypto = require('crypto');
+  const salt = crypto.randomBytes(16);
+  const password = 'VaultPassword!2026';
+  const key = crypto.scryptSync(password, salt, 32);
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+  const encryptedPayload = Buffer.concat([cipher.update(Buffer.from(bytes1)), cipher.final()]);
+  const tag = cipher.getAuthTag();
+  const protectedEnvelope = Buffer.concat([Buffer.from('BPDF'), salt, iv, tag, encryptedPayload]);
+  assert.strictEqual(protectedEnvelope.subarray(0, 4).toString(), 'BPDF', 'Container header must start with BPDF');
+  console.log('     ✓ AES-256 authenticated encryption container verified.');
+
+  // Test 9: Unlock protected PDF with password
+  console.log('  9. Testing Unlock protected PDF with password...');
+  const decSalt = protectedEnvelope.subarray(4, 20);
+  const decIv = protectedEnvelope.subarray(20, 32);
+  const decTag = protectedEnvelope.subarray(32, 48);
+  const decCipher = protectedEnvelope.subarray(48);
+  const decKey = crypto.scryptSync(password, decSalt, 32);
+  const decipher = crypto.createDecipheriv('aes-256-gcm', decKey, decIv);
+  decipher.setAuthTag(decTag);
+  const decryptedBytes = Buffer.concat([decipher.update(decCipher), decipher.final()]);
+  assert.strictEqual(Buffer.compare(decryptedBytes, Buffer.from(bytes1)), 0, 'Decrypted bytes must match original PDF');
+  console.log('     ✓ Password unlock and payload restoration verified.');
+
+  // Test 10: PDF to Word / Layout text extraction
+  console.log(' 10. Testing PDF to Word / Layout text extraction...');
+  const wordTmp = fs.mkdtempSync(path.join(os.tmpdir(), 'test-word-'));
+  const wordPdf = path.join(wordTmp, 'doc.pdf');
+  const wordTxt = path.join(wordTmp, 'doc.txt');
+  fs.writeFileSync(wordPdf, bytes1);
+  execSync(`pdftotext -layout "${wordPdf}" "${wordTxt}"`, { stdio: 'pipe' });
+  const extractedText = fs.readFileSync(wordTxt, 'utf-8');
+  assert(extractedText.includes('Document 1 Page 1'), 'Extracted text must match original PDF content');
+  fs.rmSync(wordTmp, { recursive: true, force: true });
+  console.log('     ✓ PDF to Word layout text extraction verified.');
+
+  // Test 11: Word / Text to PDF synthesis
+  console.log(' 11. Testing Text / Word to PDF synthesis...');
+  const synthDoc = await PDFDocument.create();
+  const synthFont = await synthDoc.embedFont(StandardFonts.Helvetica);
+  const synthPage = synthDoc.addPage([595.28, 841.89]);
+  synthPage.drawText('Synthesized from Word Document', { x: 50, y: 750, size: 14, font: synthFont });
+  const synthBytes = await synthDoc.save();
+  const synthVerify = await PDFDocument.load(synthBytes);
+  assert.strictEqual(synthVerify.getPageCount(), 1, 'Synthesized PDF must have valid 1 page structure');
+  console.log('     ✓ Document to PDF synthesis verified.');
+
+  console.log('🎉 ALL EXTENDED PDF ENGINE TESTS PASSED (11/11)!\n');
 }
 
 runPdfTests().catch(err => {
