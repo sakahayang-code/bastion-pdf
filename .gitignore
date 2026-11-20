@@ -12,3 +12,4 @@ Screenshot_*
 data/*.db
 data/storage/*
 !data/storage/.gitkeep
+.npm/
