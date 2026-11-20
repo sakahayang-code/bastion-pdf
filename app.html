@@ -877,6 +877,8 @@
       }
       renderStagedFiles();
       showScreen('screen-stage');
+    }
+
     async function ensurePdfLib() {
       if (typeof PDFLib !== 'undefined') return PDFLib;
       if (typeof window.PDFLib !== 'undefined') return window.PDFLib;
