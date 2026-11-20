@@ -4,3 +4,8 @@ dist/
 .gemini/
 *.log
 .DS_Store
+.cache/
+.local/
+data/*.db
+data/storage/*
+!data/storage/.gitkeep
