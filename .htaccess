@@ -22,7 +22,9 @@ RewriteRule ^replica/ - [F,L]
 # 5. UTF-8 Character Encoding
 AddDefaultCharset UTF-8
 
-# 6. Enable Gzip Compression for Fast Assets Delivery
 <IfModule mod_deflate.c>
     AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
 </IfModule>
+
+# 7. MIME type for PWA Web App Manifest
+AddType application/manifest+json .json .webmanifest

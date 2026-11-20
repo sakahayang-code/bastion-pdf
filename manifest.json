@@ -1,0 +1,55 @@
+{
+  "name": "BastionPDF - PDF Tools",
+  "short_name": "BastionPDF",
+  "description": "Sovereign Client-Side Document Workstation with zero-trace privacy.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#4338ca",
+  "categories": ["utilities", "productivity", "business"],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Merge PDF",
+      "short_name": "Merge",
+      "description": "Combine multiple PDFs into one",
+      "url": "./index.html#merge",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Convert JPG to PDF",
+      "short_name": "JPG to PDF",
+      "description": "Convert images to PDF document",
+      "url": "./index.html#jpg_to_pdf",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Edit PDF",
+      "short_name": "Edit",
+      "description": "Annotate and edit PDF pages",
+      "url": "./index.html#edit_pdf",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

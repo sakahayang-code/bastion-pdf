@@ -2,8 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
   <title>BastionPDF - Sovereign Client-Side Document Workstation</title>
+  <!-- Android PWA Manifest & Mobile App Meta -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#4338ca">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="BastionPDF">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
   <!-- Local Self-Hosted PDF-Lib, JSZip, and PDF.js with Multi-CDN Resilient Fallbacks -->
   <script src="js/pdf-lib.min.js"></script>
   <script src="js/jszip.min.js"></script>
@@ -487,7 +496,212 @@
       align-items: center;
       justify-content: center;
       background: #ffffff;
-      padding: 12px;
+    /* Native Android PWA Bottom Navigation Bar */
+    .mobile-bottom-nav {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: var(--color-bg);
+      border-top: 1px solid var(--color-border);
+      box-shadow: 0 -3px 12px rgba(15, 23, 42, 0.08);
+      z-index: 1000;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      justify-content: space-around;
+      align-items: center;
+    }
+    .bottom-nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      height: 100%;
+      background: none;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      color: var(--color-text-muted);
+      font-size: 11px;
+      font-weight: 500;
+      gap: 3px;
+      transition: color 0.15s ease, transform 0.15s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .bottom-nav-item:active {
+      transform: scale(0.93);
+    }
+    .bottom-nav-icon-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 28px;
+      border-radius: 14px;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+    .bottom-nav-icon {
+      width: 22px;
+      height: 22px;
+    }
+    .bottom-nav-item.active {
+      color: var(--color-accent);
+      font-weight: 700;
+    }
+    .bottom-nav-item.active .bottom-nav-icon-wrap {
+      background: rgba(67, 56, 202, 0.12);
+      color: var(--color-accent);
+    }
+
+    /* Mobile Android Responsive Experience */
+    @media (max-width: 768px) {
+      body {
+        background-color: #f8fafc;
+        -webkit-touch-callout: none;
+      }
+      .top-nav {
+        position: sticky;
+        top: 0;
+        z-index: 999;
+        height: 56px;
+        padding: 0 16px;
+        background: #ffffff;
+        border-bottom: 1px solid var(--color-border);
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+      }
+      .nav-links, .top-nav > div:last-child {
+        display: none !important;
+      }
+      .mobile-header-actions {
+        display: flex !important;
+        align-items: center;
+        gap: 8px;
+      }
+      .mobile-bottom-nav {
+        display: flex;
+      }
+      main {
+        max-width: 100%;
+        padding: 12px 14px calc(76px + env(safe-area-inset-bottom, 12px)) 14px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .screen {
+        width: 100%;
+        max-width: 480px;
+        margin: 0 auto;
+      }
+      .hero-header {
+        margin-bottom: 14px;
+        padding: 8px 0;
+        text-align: center;
+      }
+      .hero-header h1 {
+        font-size: 20px !important;
+        letter-spacing: -0.02em;
+        line-height: 1.25;
+        margin-bottom: 4px;
+      }
+      .hero-header p {
+        font-size: 13px !important;
+        line-height: 1.4;
+      }
+      .category-tabs {
+        display: flex;
+        overflow-x: auto;
+        padding-bottom: 6px;
+        margin-bottom: 16px;
+        gap: 8px;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+        justify-content: flex-start;
+      }
+      .category-tabs::-webkit-scrollbar {
+        display: none;
+      }
+      .tab-pill {
+        white-space: nowrap;
+        font-size: 12px;
+        padding: 6px 14px;
+        border-radius: 20px;
+      }
+      /* Tools Grid Centered like Native Android App Grid */
+      .tools-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+      }
+      .tool-card {
+        border-radius: 18px !important;
+        padding: 16px 10px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+        justify-content: center !important;
+        min-height: 125px !important;
+        background: #ffffff !important;
+        border: 1px solid var(--color-border) !important;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04) !important;
+        transition: transform 0.12s ease, box-shadow 0.12s ease !important;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .tool-card:active {
+        transform: scale(0.96) !important;
+        background-color: var(--color-surface-hover) !important;
+      }
+      .tool-card-icon {
+        font-size: 32px !important;
+        margin-bottom: 8px !important;
+      }
+      .tool-card-title {
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        margin-bottom: 4px !important;
+        color: var(--color-text);
+      }
+      .tool-card-desc {
+        font-size: 11px !important;
+        line-height: 1.35 !important;
+        color: var(--color-text-muted) !important;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      .tool-badge {
+        font-size: 10px !important;
+        top: 8px !important;
+        right: 8px !important;
+        padding: 2px 6px !important;
+      }
+      /* Android Mobile Dropzone & Staging */
+      .dropzone-container {
+        padding: 32px 16px !important;
+        border-radius: 20px !important;
+        margin-top: 8px !important;
+      }
+      .staging-layout {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 16px !important;
+      }
+      .config-panel {
+        position: static !important;
+        width: 100% !important;
+        border-radius: 20px !important;
+      }
+      .file-gallery {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+        padding: 12px !important;
+        min-height: auto !important;
+      }
     }
   </style>
 </head>
@@ -511,6 +725,11 @@
     <div style="display: flex; gap: 8px;">
       <button class="btn btn-secondary" onclick="openAuthModal()">Sign in</button>
       <button class="btn btn-primary" onclick="openAuthModal()">Get Started</button>
+    </div>
+    <div class="mobile-header-actions" style="display: none;">
+      <button class="btn btn-primary btn-sm" onclick="triggerPwaInstall()" style="font-size: 12px; padding: 6px 12px; border-radius: 20px; display: flex; align-items: center; gap: 4px;">
+        <span>📲</span> Pasang
+      </button>
     </div>
   </nav>
 
@@ -888,6 +1107,50 @@
     </div>
 
   </main>
+
+  <!-- Native Android Bottom Navigation Bar -->
+  <nav class="mobile-bottom-nav">
+    <button class="bottom-nav-item active" id="bnav-all" onclick="navBottomClick('all', this)">
+      <div class="bottom-nav-icon-wrap">
+        <svg class="bottom-nav-icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/>
+        </svg>
+      </div>
+      <span>Alat PDF</span>
+    </button>
+    <button class="bottom-nav-item" id="bnav-convert" onclick="navBottomClick('convert', this)">
+      <div class="bottom-nav-icon-wrap">
+        <svg class="bottom-nav-icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19 8l-4 4h3c0 3.31-2.69 6-6 6-1.01 0-1.97-.25-2.8-.7l-1.46 1.46C8.97 19.54 10.43 20 12 20c4.42 0 8-3.58 8-8h3l-4-4zM6 12c0-3.31 2.69-6 6-6 1.01 0 1.97.25 2.8.7l1.46-1.46C15.03 4.46 13.57 4 12 4c-4.42 0-8 3.58-8 8H1l4 4 4-4H6z"/>
+        </svg>
+      </div>
+      <span>Konversi</span>
+    </button>
+    <button class="bottom-nav-item" id="bnav-edit" onclick="navBottomClick('edit', this)">
+      <div class="bottom-nav-icon-wrap">
+        <svg class="bottom-nav-icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+        </svg>
+      </div>
+      <span>Edit PDF</span>
+    </button>
+    <button class="bottom-nav-item" id="bnav-organize" onclick="navBottomClick('organize', this)">
+      <div class="bottom-nav-icon-wrap">
+        <svg class="bottom-nav-icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/>
+        </svg>
+      </div>
+      <span>Atur PDF</span>
+    </button>
+    <button class="bottom-nav-item" id="bnav-install" onclick="triggerPwaInstall()">
+      <div class="bottom-nav-icon-wrap">
+        <svg class="bottom-nav-icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/>
+        </svg>
+      </div>
+      <span>Pasang App</span>
+    </button>
+  </nav>
 
   <!-- Share QR Modal -->
   <div class="modal-backdrop" id="qr-modal">
@@ -1901,6 +2164,58 @@
     function closeQrModal() { document.getElementById('qr-modal').classList.remove('active'); }
     function openAuthModal() { document.getElementById('auth-modal').classList.add('active'); }
     function closeAuthModal() { document.getElementById('auth-modal').classList.remove('active'); }
+
+    // Android PWA & Mobile Navigation
+    function navBottomClick(cat, btn) {
+      document.querySelectorAll('.bottom-nav-item').forEach(el => el.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+
+      if (cat === 'edit') {
+        openTool('edit_pdf');
+        return;
+      }
+
+      showScreen('screen-home');
+      const pill = Array.from(document.querySelectorAll('.tab-pill')).find(p => p.getAttribute('onclick') && p.getAttribute('onclick').includes(cat));
+      if (pill) {
+        filterCategory(cat, pill);
+      } else {
+        const firstPill = document.querySelector('.tab-pill');
+        if (firstPill) filterCategory(cat, firstPill);
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const bnavInstall = document.getElementById('bnav-install');
+      if (bnavInstall) bnavInstall.style.display = 'flex';
+      const topInstall = document.querySelector('.mobile-header-actions');
+      if (topInstall) topInstall.style.display = 'flex';
+    });
+
+    async function triggerPwaInstall() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log('PWA install choice:', outcome);
+        deferredPrompt = null;
+      } else {
+        alert('Panduan PWA Android:\n\n1. Buka menu titik tiga (⋮) di Chrome Android.\n2. Pilih "Install app" atau "Tambahkan ke Layar Utama".\n3. BastionPDF akan langsung terpasang seperti aplikasi Android native!');
+      }
+    }
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').then((reg) => {
+          console.log('BastionPDF PWA Service Worker Registered', reg.scope);
+        }).catch((err) => {
+          console.warn('SW registration notice:', err);
+        });
+      });
+    }
   </script>
 </body>
 </html>
