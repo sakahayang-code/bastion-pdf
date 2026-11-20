@@ -8,7 +8,7 @@
 
 ## 🌟 Why BastionPDF?
 
-Most popular cloud PDF converters (iLovePDF, Smallpdf, etc.) operate on an outdated server-upload architecture: your confidential contracts, tax returns, and medical records are transmitted to third-party cloud servers, while loading hundreds of advertising trackers and cookies.
+Most popular cloud PDF converters operate on an outdated server-upload architecture: your confidential contracts, tax returns, and medical records are transmitted to third-party cloud servers, while loading hundreds of advertising trackers and cookies.
 
 **BastionPDF completely re-engineers document utilities around data sovereignty:**
 - 🔒 **Zero Server Uploads**: Core operations run entirely in your browser memory using WebAssembly and JavaScript (`pdf-lib`). No bytes ever leave your device.

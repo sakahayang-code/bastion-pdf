@@ -1,0 +1,28 @@
+# BastionPDF - Apache / cPanel / LiteSpeed Configuration
+
+# 1. Set default landing page to index.html
+DirectoryIndex index.html app.html index.php
+
+# 2. Disable directory listing for security
+Options -Indexes
+
+# 3. Protect sensitive files and directories
+<FilesMatch "^(\.env|\.git|package\.json|package-lock\.json|Dockerfile|docker-compose\.yml|tsconfig\.json)">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# 4. Protect internal database and scripts folders
+RewriteEngine On
+
+RewriteRule ^data/ - [F,L]
+RewriteRule ^scripts/ - [F,L]
+RewriteRule ^replica/ - [F,L]
+
+# 5. UTF-8 Character Encoding
+AddDefaultCharset UTF-8
+
+# 6. Enable Gzip Compression for Fast Assets Delivery
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
+</IfModule>
