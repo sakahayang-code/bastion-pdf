@@ -1,0 +1,21 @@
+{
+  "name": "BastionPDF",
+  "avoid": [
+    "iLovePDF",
+    "i Love PDF",
+    "ilovepdf",
+    "ilovepdf.com",
+    "Replica PDF"
+  ],
+  "domains": [
+    "ilovepdf.com"
+  ],
+  "colors": [
+    "#e5322d",
+    "#e1251b",
+    "#ff3b30",
+    "#e53935",
+    "#be123c",
+    "#9f1239"
+  ]
+}

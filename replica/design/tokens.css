@@ -1,7 +1,7 @@
 /**
  * Design Tokens CSS Custom Properties
- * Generated for Replica PDF Suite from replica/design/tokens.json
- * WCAG 2.2 AA/AAA Compliant (0 Failures)
+ * Generated for BastionPDF from replica/design/tokens.json
+ * WCAG 2.2 AA/AAA Compliant (0 Failures - 7.90:1 Contrast)
  */
 
 :root {
@@ -13,9 +13,9 @@
   --color-border-input: #64748b;
   --color-text: #0f172a;
   --color-text-muted: #475569;
-  --color-accent: #be123c;
+  --color-accent: #4338ca;
   --color-on-accent: #ffffff;
-  --color-accent-hover: #9f1239;
+  --color-accent-hover: #3730a3;
   --color-danger: #b91c1c;
   --color-on-danger: #ffffff;
   --color-success: #15803d;
