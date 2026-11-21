@@ -1356,13 +1356,12 @@
           <div id="config-word-opts" class="config-row" style="display: none;">
             <span class="config-label">Format Dokumen Word</span>
             <select id="word-format-type" class="input-field">
-              <option value="docx" selected>Microsoft Word (.docx) - Tata Letak Sama Persis</option>
-              <option value="docx_flow">Microsoft Word (.docx) - Aliran Teks &amp; Tabel Reflow</option>
+              <option value="docx" selected>Microsoft Word (.docx) - Format Rapi &amp; Presisi</option>
               <option value="rtf">Rich Text Format (.rtf)</option>
-              <option value="txt">Teks Tata Letak (.txt)</option>
+              <option value="txt">Teks Murni (.txt)</option>
             </select>
             <p style="font-size: 12px; color: var(--color-text-muted); margin-top: 6px;">
-              ✨ <b>Tata Letak Sama Persis</b> mempertahankan geometri halaman asli, font, ukuran, warna, posisi teks, tabel, dan latar grafis 100% sama dengan PDF asli.
+              ✨ Menghasilkan file Word asli (.docx) yang bersih tanpa bayangan teks ganda, dengan tabel data formulir yang lurus dan rapi, judul di tengah, serta posisi tanda tangan di kanan bawah.
             </p>
           </div>
 
@@ -2273,78 +2272,9 @@
         lastPageWidthDxa = pWidthDxa;
         lastPageHeightDxa = pHeightDxa;
 
-        // Render high-resolution page canvas for exact visual replication of vector lines, logos, stamps, tables
-        let pageImgId = null;
-        if (typeof document !== 'undefined' && document.createElement) {
-          try {
-            const canvas = document.createElement('canvas');
-            const renderScale = 2.0; // 300 DPI high resolution
-            const renderViewport = page.getViewport({ scale: renderScale });
-            canvas.width = renderViewport.width;
-            canvas.height = renderViewport.height;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            await page.render({ canvasContext: ctx, viewport: renderViewport }).promise;
-            const dataUrl = canvas.toDataURL('image/png');
-            const base64 = dataUrl.split(',')[1];
-            if (base64 && base64.length > 100) {
-              pageImgId = `rIdImg${pNum}`;
-              mediaImages.push({
-                relId: pageImgId,
-                fileName: `page_${pNum}.png`,
-                base64: base64,
-                widthEmu: pWidthEmu,
-                heightEmu: pHeightEmu
-              });
-            }
-          } catch (canvasErr) {
-            console.warn('Canvas render fallback on page ' + pNum + ':', canvasErr);
-          }
-        }
-
-        // If in 'exact' mode and image rendered, anchor the full-page visual background
-        if (layoutMode === 'exact' && pageImgId) {
-          docXmlBody += `
-    <w:p>
-      <w:pPr><w:spacing w:before="0" w:after="0" w:line="240" w:lineRule="auto"/></w:pPr>
-      <w:r>
-        <w:drawing>
-          <wp:anchor distT="0" distB="0" distL="0" distR="0" simplePos="0" relativeHeight="0" behindDoc="1" locked="0" layoutInCell="1" allowOverlap="1">
-            <wp:simplePos x="0" y="0"/>
-            <wp:positionH relativeFrom="page"><wp:posOffset>0</wp:posOffset></wp:positionH>
-            <wp:positionV relativeFrom="page"><wp:posOffset>0</wp:posOffset></wp:positionV>
-            <wp:extent cx="${pWidthEmu}" cy="${pHeightEmu}"/>
-            <wp:effectExtent l="0" t="0" r="0" b="0"/>
-            <wp:wrapNone/>
-            <wp:docPr id="${pNum}" name="Page ${pNum} Background"/>
-            <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
-              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
-                <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
-                  <pic:nvPicPr>
-                    <pic:cNvPr id="${pNum}" name="page_${pNum}.png"/>
-                    <pic:cNvPicPr/>
-                  </pic:nvPicPr>
-                  <pic:blipFill>
-                    <a:blip r:embed="${pageImgId}" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/>
-                    <a:stretch><a:fillRect/></a:stretch>
-                  </pic:blipFill>
-                  <pic:spPr>
-                    <a:xfrm><a:off x="0" y="0"/><a:ext cx="${pWidthEmu}" cy="${pHeightEmu}"/></a:xfrm>
-                    <a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
-                  </pic:spPr>
-                </pic:pic>
-              </a:graphicData>
-            </a:graphic>
-          </wp:anchor>
-        </w:drawing>
-      </w:r>
-    </w:p>`;
-        }
-
-        // Extract and group text elements
+        // Extract text items from page
         const textContent = await page.getTextContent({ normalizeWhitespace: true });
-        const lineBuckets = {};
+        const rawItems = [];
 
         for (const item of textContent.items) {
           if (!item.str || !item.str.trim()) continue;
@@ -2352,14 +2282,12 @@
           const pdfX = item.transform[4];
           const pdfY = item.transform[5];
           const topY = pHeightPt - (pdfY + fontHeight);
-          const bucketKey = Math.round(topY / 4) * 4;
-          if (!lineBuckets[bucketKey]) lineBuckets[bucketKey] = [];
 
           const fontName = (item.fontName || '').toLowerCase();
-          const isBold = /bold|heavy|black|medi/i.test(fontName) || fontHeight >= 16;
+          const isBold = /bold|heavy|black|medi/i.test(fontName) || (fontHeight >= 15 && item.str.length < 50);
           const isItalic = /italic|oblique/i.test(fontName);
 
-          lineBuckets[bucketKey].push({
+          rawItems.push({
             str: item.str,
             x: pdfX,
             topY: topY,
@@ -2370,100 +2298,30 @@
           });
         }
 
-        const sortedLineKeys = Object.keys(lineBuckets).map(Number).sort((a, b) => a - b);
-        let prevTopY = 0;
-        let lineIdx = 0;
-
-        while (lineIdx < sortedLineKeys.length) {
-          const lKey = sortedLineKeys[lineIdx];
-          const rawItems = lineBuckets[lKey].sort((a, b) => a.x - b.x);
-
-          // Detect tabular columns
-          const cols = [];
-          let currentSegment = { str: rawItems[0].str, x: rawItems[0].x, maxX: rawItems[0].x + rawItems[0].width, fontSize: rawItems[0].fontSize, bold: rawItems[0].bold, italic: rawItems[0].italic };
-          for (let i = 1; i < rawItems.length; i++) {
-            const it = rawItems[i];
-            if (it.x - currentSegment.maxX > 22) {
-              cols.push(currentSegment);
-              currentSegment = { str: it.str, x: it.x, maxX: it.x + it.width, fontSize: it.fontSize, bold: it.bold, italic: it.italic };
-            } else {
-              currentSegment.str += ' ' + it.str;
-              currentSegment.maxX = it.x + it.width;
-              if (it.bold) currentSegment.bold = true;
-            }
-          }
-          cols.push(currentSegment);
-
-          const isTable = cols.length >= 2 && (cols[cols.length - 1].maxX - cols[0].x > 180);
-
-          if (isTable && layoutMode !== 'exact') {
-            docXmlBody += `<w:tbl><w:tblPr><w:tblW w:w="${pWidthDxa - 1440}" w:type="dxa"/><w:jc w:val="center"/><w:tblBorders><w:top w:val="single" w:sz="4" w:space="0" w:color="CBD5E1"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="CBD5E1"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="E2E8F0"/></w:tblBorders></w:tblPr><w:tr>`;
-            const colWidth = Math.round((pWidthDxa - 1440) / cols.length);
-            for (const col of cols) {
-              const halfPt = Math.max(16, Math.round(col.fontSize * 2));
-              docXmlBody += `<w:tc><w:tcPr><w:tcW w:w="${colWidth}" w:type="dxa"/></w:tcPr><w:p><w:pPr><w:spacing w:before="60" w:after="60"/></w:pPr><w:r><w:rPr><w:sz w:val="${halfPt}"/>${col.bold ? '<w:b/>' : ''}${col.italic ? '<w:i/>' : ''}</w:rPr><w:t xml:space="preserve">${escapeXmlString(col.str)}</w:t></w:r></w:p></w:tc>`;
-            }
-            docXmlBody += `</w:tr></w:tbl>`;
-            lineIdx++;
-            continue;
-          }
-
-          // Render formatted Paragraph
-          const minX = rawItems[0].x;
-          const maxX = rawItems[rawItems.length - 1].x + rawItems[rawItems.length - 1].width;
-          const lineCenter = (minX + maxX) / 2;
-          const lineTopY = rawItems[0].topY;
-          const maxFontSize = Math.max(...rawItems.map(i => i.fontSize));
-          const halfPt = Math.max(16, Math.min(72, Math.round(maxFontSize * 2)));
-
-          let jc = 'left';
-          if (Math.abs(lineCenter - (pWidthPt / 2)) < 35 && (maxX - minX) < pWidthPt * 0.75) {
-            jc = 'center';
-          } else if (minX > pWidthPt * 0.52 && (maxX - minX) < pWidthPt * 0.45) {
-            jc = 'right';
-          }
-
-          const gap = prevTopY > 0 ? Math.max(0, lineTopY - prevTopY) : 0;
-          const beforeDxa = Math.min(720, Math.max(40, Math.round(gap * 14)));
-          prevTopY = lineTopY;
-
-          let indXml = '';
-          if (jc === 'left' && minX > 40) {
-            indXml = `<w:ind w:left="${Math.min(3600, Math.round(minX * 18))}"/>`;
-          }
-
-          docXmlBody += `
-    <w:p>
-      <w:pPr>
-        <w:jc w:val="${jc}"/>
-        ${indXml}
-        <w:spacing w:before="${beforeDxa}" w:after="40" w:line="260" w:lineRule="auto"/>
-      </w:pPr>`;
-
-          for (let i = 0; i < rawItems.length; i++) {
-            const it = rawItems[i];
-            const itemHalfPt = Math.max(16, Math.round(it.fontSize * 2));
-            const spaceBefore = (i > 0 && it.x - (rawItems[i - 1].x + rawItems[i - 1].width) > 3) ? ' ' : '';
-            docXmlBody += `
-      <w:r>
-        <w:rPr>
-          <w:sz w:val="${itemHalfPt}"/>
-          ${it.bold ? '<w:b/>' : ''}
-          ${it.italic ? '<w:i/>' : ''}
-        </w:rPr>
-        <w:t xml:space="preserve">${escapeXmlString(spaceBefore + it.str)}</w:t>
-      </w:r>`;
-          }
-
-          docXmlBody += `
-    </w:p>`;
-
-          lineIdx++;
-        }
-
-        // If scanned page with zero text, make sure the page image is displayed
-        if (textContent.items.length === 0 && pageImgId && layoutMode !== 'exact') {
-          docXmlBody += `
+        // If scanned page with 0 text: render high-res image of page
+        if (rawItems.length === 0 && typeof document !== 'undefined' && document.createElement) {
+          try {
+            const canvas = document.createElement('canvas');
+            const renderScale = 2.0;
+            const renderViewport = page.getViewport({ scale: renderScale });
+            canvas.width = renderViewport.width;
+            canvas.height = renderViewport.height;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            await page.render({ canvasContext: ctx, viewport: renderViewport }).promise;
+            const dataUrl = canvas.toDataURL('image/png');
+            const base64 = dataUrl.split(',')[1];
+            if (base64 && base64.length > 100) {
+              const pageImgId = `rIdImg${pNum}`;
+              mediaImages.push({
+                relId: pageImgId,
+                fileName: `page_${pNum}.png`,
+                base64: base64,
+                widthEmu: pWidthEmu,
+                heightEmu: pHeightEmu
+              });
+              docXmlBody += `
     <w:p>
       <w:pPr><w:jc w:val="center"/><w:spacing w:before="0" w:after="0"/></w:pPr>
       <w:r>
@@ -2493,6 +2351,178 @@
         </w:drawing>
       </w:r>
     </w:p>`;
+            }
+          } catch (scanErr) {
+            console.warn('Scanned fallback warning:', scanErr);
+          }
+        }
+
+        // Intelligent Baseline Line Clustering for clean typography
+        rawItems.sort((a, b) => a.topY - b.topY);
+        const lines = [];
+
+        for (const item of rawItems) {
+          let placed = false;
+          for (const line of lines) {
+            const threshold = Math.max(6, (item.fontSize || 12) * 0.52);
+            if (Math.abs(item.topY - line.avgTopY) <= threshold) {
+              line.items.push(item);
+              line.avgTopY = line.items.reduce((s, it) => s + it.topY, 0) / line.items.length;
+              placed = true;
+              break;
+            }
+          }
+          if (!placed) {
+            lines.push({
+              avgTopY: item.topY,
+              items: [item]
+            });
+          }
+        }
+
+        lines.sort((a, b) => a.avgTopY - b.avgTopY);
+        lines.forEach(l => l.items.sort((a, b) => a.x - b.x));
+
+        // Format lines into Word paragraphs and borderless tables
+        let lineIdx = 0;
+        let prevLineY = 0;
+
+        while (lineIdx < lines.length) {
+          const currentLine = lines[lineIdx];
+          const lineText = currentLine.items.map(it => it.str).join(' ').trim();
+
+          // Check if this line is part of a consecutive form field block (e.g. "Nama : AFWI...", "NIS : 123...")
+          const isFormLine = (l) => {
+            const full = l.items.map(it => it.str).join(' ');
+            const colonIdx = full.indexOf(':');
+            return colonIdx > 1 && colonIdx < 35 && !full.trim().endsWith(':');
+          };
+
+          if (isFormLine(currentLine)) {
+            // Collect all consecutive form lines
+            const formLines = [];
+            while (lineIdx < lines.length && isFormLine(lines[lineIdx])) {
+              formLines.push(lines[lineIdx]);
+              lineIdx++;
+            }
+
+            // Emit as clean borderless Word Table with 3 columns (Label, Colon, Value)
+            docXmlBody += `
+    <w:tbl>
+      <w:tblPr>
+        <w:tblW w:w="${pWidthDxa - 1440}" w:type="dxa"/>
+        <w:jc w:val="left"/>
+        <w:tblInd w:w="480" w:type="dxa"/>
+        <w:tblBorders>
+          <w:top w:val="none"/><w:left w:val="none"/><w:bottom w:val="none"/><w:right w:val="none"/>
+          <w:insideH w:val="none"/><w:insideV w:val="none"/>
+        </w:tblBorders>
+      </w:tblPr>`;
+
+            for (const fLine of formLines) {
+              const fullText = fLine.items.map(it => it.str).join(' ');
+              const colonPos = fullText.indexOf(':');
+              const labelText = fullText.substring(0, colonPos).trim();
+              const valText = fullText.substring(colonPos + 1).trim();
+              const isValBold = fLine.items.some(it => it.bold && fullText.indexOf(it.str) >= colonPos);
+
+              docXmlBody += `
+      <w:tr>
+        <w:tc>
+          <w:tcPr><w:tcW w:w="2600" w:type="dxa"/></w:tcPr>
+          <w:p><w:pPr><w:spacing w:before="30" w:after="30" w:line="240" w:lineRule="auto"/></w:pPr><w:r><w:t xml:space="preserve">${escapeXmlString(labelText)}</w:t></w:r></w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr><w:tcW w:w="300" w:type="dxa"/></w:tcPr>
+          <w:p><w:pPr><w:spacing w:before="30" w:after="30" w:line="240" w:lineRule="auto"/></w:pPr><w:r><w:t>:</w:t></w:r></w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr><w:tcW w:w="${pWidthDxa - 4340}" w:type="dxa"/></w:tcPr>
+          <w:p><w:pPr><w:spacing w:before="30" w:after="30" w:line="240" w:lineRule="auto"/></w:pPr><w:r><w:rPr>${isValBold ? '<w:b/>' : ''}</w:rPr><w:t xml:space="preserve">${escapeXmlString(valText)}</w:t></w:r></w:p>
+        </w:tc>
+      </w:tr>`;
+            }
+
+            docXmlBody += `
+    </w:tbl>`;
+
+            prevLineY = formLines[formLines.length - 1].avgTopY;
+            continue;
+          }
+
+          // Otherwise render as a formatted Paragraph
+          const minX = currentLine.items[0].x;
+          const lastIt = currentLine.items[currentLine.items.length - 1];
+          const maxX = lastIt.x + lastIt.width;
+          const lineCenter = (minX + maxX) / 2;
+          const maxFontSize = Math.max(...currentLine.items.map(it => it.fontSize));
+          const isLineBold = currentLine.items.some(it => it.bold);
+
+          // Detect alignment
+          let jc = 'left';
+          let indXml = '';
+          const isKopHeader = currentLine.avgTopY < 165 && (Math.abs(lineCenter - (pWidthPt / 2)) < 55 || lineText.length > 35);
+          const isJudul = Math.abs(lineCenter - (pWidthPt / 2)) < 40 && (maxFontSize >= 13 || isLineBold || /surat|keputusan|keterangan|nomor|laporan/i.test(lineText));
+          const isSignature = minX > (pWidthPt * 0.52);
+
+          if (isKopHeader || isJudul) {
+            jc = 'center';
+          } else if (isSignature) {
+            indXml = `<w:ind w:left="5600"/>`;
+          } else if (minX > 35 && lineText.length < 80) {
+            indXml = `<w:ind w:left="${Math.min(2400, Math.round(minX * 18))}"/>`;
+          }
+
+          // Spacing before / after
+          const gap = prevLineY > 0 ? Math.max(0, currentLine.avgTopY - prevLineY) : 0;
+          let beforeDxa = 0;
+          let afterDxa = 30;
+
+          if (gap > 35 && isSignature) {
+            beforeDxa = 600; // signature space
+          } else if (gap > maxFontSize * 1.6) {
+            beforeDxa = 140; // new section gap
+          } else if (gap > 4) {
+            beforeDxa = 20;
+          }
+
+          prevLineY = currentLine.avgTopY;
+
+          // Check if bottom of Kop Surat (NSS/NPSN/Alamat) -> add border line
+          let pBdrXml = '';
+          if (currentLine.avgTopY < 165 && /nss|npsn|nis|telp|jalan|email|fax/i.test(lineText)) {
+            pBdrXml = `<w:pBdr><w:bottom w:val="single" w:sz="18" w:space="8" w:color="000000"/></w:pBdr>`;
+            afterDxa = 180;
+          }
+
+          docXmlBody += `
+    <w:p>
+      <w:pPr>
+        <w:jc w:val="${jc}"/>
+        ${indXml}
+        ${pBdrXml}
+        <w:spacing w:before="${beforeDxa}" w:after="${afterDxa}" w:line="260" w:lineRule="auto"/>
+      </w:pPr>`;
+
+          for (let i = 0; i < currentLine.items.length; i++) {
+            const it = currentLine.items[i];
+            const itemHalfPt = Math.max(16, Math.min(72, Math.round(it.fontSize * 2)));
+            const spaceBefore = (i > 0 && it.x - (currentLine.items[i - 1].x + currentLine.items[i - 1].width) > 3) ? ' ' : '';
+            docXmlBody += `
+      <w:r>
+        <w:rPr>
+          <w:sz w:val="${itemHalfPt}"/>
+          ${it.bold ? '<w:b/>' : ''}
+          ${it.italic ? '<w:i/>' : ''}
+        </w:rPr>
+        <w:t xml:space="preserve">${escapeXmlString(spaceBefore + it.str)}</w:t>
+      </w:r>`;
+          }
+
+          docXmlBody += `
+    </w:p>`;
+
+          lineIdx++;
         }
 
         // Add page break if not last page
@@ -2544,9 +2574,9 @@
   <w:docDefaults>
     <w:rPrDefault>
       <w:rPr>
-        <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+        <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
         <w:sz w:val="22"/>
-        <w:color w:val="0F172A"/>
+        <w:color w:val="000000"/>
       </w:rPr>
     </w:rPrDefault>
   </w:docDefaults>
