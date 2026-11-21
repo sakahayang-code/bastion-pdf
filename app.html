@@ -747,6 +747,332 @@
         min-height: auto !important;
       }
     }
+
+    /* Visual Interactive PDF Editor Studio */
+    #screen-pdf-editor {
+      width: 100vw;
+      max-width: 100vw;
+      margin: 0;
+      padding: 0;
+      display: none;
+      flex-direction: column;
+      height: 100vh;
+      background: #f8fafc;
+      overflow: hidden;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 100000;
+    }
+    #screen-pdf-editor.active {
+      display: flex !important;
+    }
+    .editor-header {
+      height: 54px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--color-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      flex-shrink: 0;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+    }
+    .editor-doc-title {
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--color-text);
+      max-width: 220px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .editor-pagination {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .editor-tools-ribbon {
+      background: #ffffff;
+      border-bottom: 1px solid var(--color-border);
+      padding: 6px 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .editor-tools-ribbon::-webkit-scrollbar {
+      display: none;
+    }
+    .ribbon-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--color-border);
+      background: #ffffff;
+      color: var(--color-text);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .ribbon-btn:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+    }
+    .ribbon-btn.active {
+      background: #e0f2fe;
+      border-color: #2173a8;
+      color: #2173a8;
+    }
+    .ribbon-btn-danger {
+      color: #dc2626 !important;
+      border-color: #fca5a5 !important;
+    }
+    .ribbon-btn-danger:hover {
+      background: #fee2e2 !important;
+    }
+    .ribbon-icon {
+      font-size: 14px;
+    }
+    .ribbon-dropdown-wrap {
+      position: relative;
+    }
+    .ribbon-dropdown-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: #ffffff;
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+      z-index: 100005;
+      min-width: 190px;
+      padding: 4px 0;
+      margin-top: 4px;
+    }
+    .stamp-opt {
+      padding: 8px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--color-text);
+      transition: background 0.12s;
+    }
+    .stamp-opt:hover {
+      background: #f1f5f9;
+      color: #2173a8;
+    }
+    .editor-props-bar {
+      background: #f8fafc;
+      border-bottom: 1px solid var(--color-border);
+      padding: 6px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .editor-props-bar::-webkit-scrollbar {
+      display: none;
+    }
+    .input-field-sm {
+      height: 30px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--color-border-input);
+      font-size: 12px;
+      background: #ffffff;
+      color: var(--color-text);
+    }
+    .style-toggle-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: 1px solid var(--color-border);
+      background: #ffffff;
+      cursor: pointer;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .style-toggle-btn.active {
+      background: #2173a8;
+      color: #ffffff;
+      border-color: #2173a8;
+    }
+    .color-dot {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: inline-block;
+      border: 2px solid #ffffff;
+      box-shadow: 0 0 0 1px #cbd5e1;
+      transition: transform 0.12s;
+    }
+    .color-dot:hover, .color-dot.active {
+      transform: scale(1.18);
+      box-shadow: 0 0 0 2px #2173a8;
+    }
+    .editor-viewport {
+      flex: 1;
+      overflow: auto;
+      background: #475569;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 24px 16px;
+      position: relative;
+      touch-action: pan-x pan-y;
+    }
+    .editor-canvas-stage {
+      position: relative;
+      background: #ffffff;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+      margin: auto;
+      user-select: none;
+    }
+    #editor-pdf-canvas {
+      display: block;
+    }
+    .editor-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    .editor-item {
+      position: absolute;
+      pointer-events: auto;
+      cursor: move;
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .editor-item.selected {
+      outline: 2px solid #2173a8;
+      box-shadow: 0 0 0 3px rgba(33, 115, 168, 0.25);
+    }
+    .editor-text-item {
+      padding: 2px 4px;
+      min-width: 40px;
+      min-height: 20px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.25;
+    }
+    .editor-text-input {
+      border: none;
+      outline: none;
+      background: transparent;
+      font-family: inherit;
+      font-size: inherit;
+      font-weight: inherit;
+      font-style: inherit;
+      color: inherit;
+      width: 100%;
+      resize: none;
+      overflow: hidden;
+      display: block;
+      padding: 0;
+      margin: 0;
+    }
+    .editor-whiteout-item {
+      background: #ffffff;
+      border: 1px dashed #cbd5e1;
+      opacity: 0.99;
+    }
+    .editor-whiteout-item.black {
+      background: #000000;
+    }
+    .editor-img-item img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: contain;
+      pointer-events: none;
+    }
+    .editor-stamp-item {
+      border: 2px solid currentColor;
+      background: #ffffff;
+      padding: 4px 8px;
+      font-weight: 800;
+      font-size: 11px;
+      border-radius: 4px;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .resize-handle {
+      position: absolute;
+      bottom: -5px;
+      right: -5px;
+      width: 12px;
+      height: 12px;
+      background: #2173a8;
+      border: 2px solid #ffffff;
+      cursor: se-resize;
+      border-radius: 3px;
+      pointer-events: auto;
+    }
+    .editor-detected-text {
+      position: absolute;
+      border: 1px dashed rgba(33, 115, 168, 0.7);
+      background: rgba(33, 115, 168, 0.1);
+      cursor: pointer;
+      pointer-events: auto;
+      border-radius: 3px;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .editor-detected-text:hover {
+      background: rgba(33, 115, 168, 0.28);
+      border-color: #2173a8;
+    }
+    .editor-helper-bar {
+      height: 32px;
+      background: #ffffff;
+      border-top: 1px solid var(--color-border);
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      font-size: 12px;
+      color: var(--color-text-muted);
+      flex-shrink: 0;
+    }
+    @media (max-width: 768px) {
+      .editor-header {
+        height: 48px;
+        padding: 0 8px;
+      }
+      .editor-doc-title {
+        max-width: 100px;
+        font-size: 11px;
+      }
+      .editor-viewport {
+        padding: 12px 4px;
+      }
+      .editor-tools-ribbon {
+        padding: 4px 6px;
+      }
+      .ribbon-btn {
+        padding: 5px 8px;
+        font-size: 11px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -969,51 +1295,14 @@
 
           <!-- Edit PDF Options -->
           <div id="config-edit-opts" class="config-row" style="display: none;">
-            <span class="config-label">Teks Tambahan / Catatan</span>
-            <input type="text" id="edit-text-input" class="input-field" placeholder="Ketik teks yang ingin ditambahkan ke PDF...">
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;">
-              <div>
-                <span class="config-label">Ukuran Font</span>
-                <select id="edit-text-size" class="input-field">
-                  <option value="12">Kecil (12pt)</option>
-                  <option value="16" selected>Sedang (16pt)</option>
-                  <option value="20">Besar (20pt)</option>
-                  <option value="28">Judul (28pt)</option>
-                </select>
-              </div>
-              <div>
-                <span class="config-label">Warna Teks</span>
-                <select id="edit-text-color" class="input-field">
-                  <option value="black">Hitam</option>
-                  <option value="indigo">Indigo</option>
-                  <option value="red">Merah</option>
-                  <option value="blue">Biru</option>
-                </select>
-              </div>
-            </div>
-
-            <span class="config-label" style="margin-top: 10px;">Posisi Penempatan</span>
-            <select id="edit-text-pos" class="input-field">
-              <option value="top-center">Bagian Atas (Header)</option>
-              <option value="top-right">Pojok Kanan Atas</option>
-              <option value="center">Tengah Halaman</option>
-              <option value="bottom-center" selected>Bagian Bawah (Footer)</option>
-              <option value="bottom-right">Pojok Kanan Bawah</option>
-            </select>
-
-            <span class="config-label" style="margin-top: 10px;">Stempel Tambahan</span>
-            <select id="edit-stamp-type" class="input-field">
-              <option value="none">Tanpa Stempel</option>
-              <option value="approved">Stempel: DISETUJUI / APPROVED</option>
-              <option value="confidential">Stempel: RAHASIA / CONFIDENTIAL</option>
-              <option value="revised">Stempel: DIREVISI / REVISED</option>
-              <option value="date">Stempel: Tanggal Hari Ini</option>
-            </select>
-
-            <div style="margin-top: 12px; display: flex; align-items: center; gap: 8px;">
-              <input type="checkbox" id="edit-whiteout-toggle" style="width: 16px; height: 16px;">
-              <label for="edit-whiteout-toggle" style="font-size: 13px; cursor: pointer;">Tambahkan kotak penutup putih (Whiteout redact)</label>
+            <div style="background: rgba(33, 115, 168, 0.08); border: 1px solid rgba(33, 115, 168, 0.25); border-radius: 14px; padding: 16px;">
+              <h4 style="font-size: 15px; font-weight: 700; color: #2173a8; margin-bottom: 6px;">🎨 Studio Visual Editor PDF</h4>
+              <p style="font-size: 13px; color: var(--color-text-muted); line-height: 1.45; margin-bottom: 14px;">
+                Edit langsung teks dokumen, ubah posisi dan tata letak, tambah teks/gambar/stempel, atau hapus dan tutupi bagian tertentu.
+              </p>
+              <button type="button" class="btn btn-primary" onclick="initPdfEditorStudio(stagedFiles[0])" style="width: 100%; background: #2173a8; font-size: 13px; padding: 10px; border-radius: 10px; font-weight: 700;">
+                Buka Visual Editor Sekarang ➔
+              </button>
             </div>
           </div>
 
@@ -1045,6 +1334,149 @@
             </button>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- S08: Visual Interactive PDF Editor Studio -->
+    <div id="screen-pdf-editor" class="screen">
+      <!-- Editor Top Toolbar -->
+      <div class="editor-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="exitPdfEditor()">← Keluar</button>
+          <div class="editor-doc-title" id="editor-doc-title">Dokumen.pdf</div>
+        </div>
+
+        <!-- Page Switcher & Zoom Controls -->
+        <div class="editor-pagination">
+          <button type="button" class="btn btn-secondary btn-icon-xs" onclick="changeEditorPage(-1)" title="Halaman Sebelumnya">◀</button>
+          <span id="editor-page-info" style="font-size: 13px; font-weight: 600; min-width: 90px; text-align: center;">Halaman 1 / 1</span>
+          <button type="button" class="btn btn-secondary btn-icon-xs" onclick="changeEditorPage(1)" title="Halaman Berikutnya">▶</button>
+          <div style="display: flex; align-items: center; gap: 4px; margin-left: 8px;">
+            <button type="button" class="btn btn-secondary btn-icon-xs" onclick="zoomEditor(-0.15)" title="Perkecil">－</button>
+            <span id="editor-zoom-label" style="font-size: 11px; font-weight: 500; min-width: 38px; text-align: center;">100%</span>
+            <button type="button" class="btn btn-secondary btn-icon-xs" onclick="zoomEditor(0.15)" title="Perbesar">＋</button>
+          </div>
+        </div>
+
+        <!-- Save Button -->
+        <div>
+          <button type="button" class="btn btn-primary btn-sm" onclick="savePdfEditorChanges()" style="background: #2173a8; display: flex; align-items: center; gap: 6px; padding: 7px 16px; border-radius: 20px;">
+            <span>💾</span> <strong>Simpan PDF</strong>
+          </button>
+        </div>
+      </div>
+
+      <!-- Action Mode Buttons Ribbon -->
+      <div class="editor-tools-ribbon">
+        <button type="button" class="ribbon-btn active" id="tool-mode-select" onclick="setEditorMode('select')" title="Pilih dan Geser Elemen">
+          <span class="ribbon-icon">↖</span>
+          <span>Pilih / Geser</span>
+        </button>
+
+        <button type="button" class="ribbon-btn" id="tool-mode-addtext" onclick="addEditorTextItem()" title="Tambah Teks Baru">
+          <span class="ribbon-icon">✍</span>
+          <span>+ Teks Baru</span>
+        </button>
+
+        <button type="button" class="ribbon-btn" id="tool-mode-detecttext" onclick="detectAndEnablePdfTextEditing()" title="Deteksi dan Ubah Teks Asli PDF">
+          <span class="ribbon-icon">🔍</span>
+          <span>Edit Teks Asli</span>
+        </button>
+
+        <button type="button" class="ribbon-btn" id="tool-mode-whiteout" onclick="addEditorWhiteoutBox()" title="Hapus / Tutup Konten dengan Kotak Putih">
+          <span class="ribbon-icon">🧹</span>
+          <span>Hapus Area</span>
+        </button>
+
+        <button type="button" class="ribbon-btn" onclick="document.getElementById('editor-img-upload').click()" title="Sisipkan Gambar atau Tanda Tangan">
+          <span class="ribbon-icon">🖼</span>
+          <span>+ Gambar / TTD</span>
+        </button>
+        <input type="file" id="editor-img-upload" accept="image/*" style="display: none;" onchange="handleEditorImageUpload(event)">
+
+        <div class="ribbon-dropdown-wrap">
+          <button type="button" class="ribbon-btn" onclick="toggleStampMenu()" title="Tambahkan Stempel Cepat">
+            <span class="ribbon-icon">🏷</span>
+            <span>+ Stempel ▾</span>
+          </button>
+          <div id="editor-stamp-menu" class="ribbon-dropdown-menu" style="display: none;">
+            <div class="stamp-opt" onclick="addEditorStamp('APPROVED')">✔ DISETUJUI / APPROVED</div>
+            <div class="stamp-opt" onclick="addEditorStamp('CONFIDENTIAL')">🔒 RAHASIA / CONFIDENTIAL</div>
+            <div class="stamp-opt" onclick="addEditorStamp('LUNAS')">✔ LUNAS / PAID</div>
+            <div class="stamp-opt" onclick="addEditorStamp('DRAFT')">✎ DRAF / DRAFT</div>
+            <div class="stamp-opt" onclick="addEditorStamp('DATE')">📅 Tanggal Hari Ini</div>
+          </div>
+        </div>
+
+        <button type="button" class="ribbon-btn ribbon-btn-danger" id="tool-mode-delete" onclick="deleteSelectedEditorItem()" title="Hapus elemen yang sedang dipilih" style="display: none;">
+          <span class="ribbon-icon">🗑</span>
+          <span>Hapus Blok</span>
+        </button>
+      </div>
+
+      <!-- Properties Bar (shown when element is selected) -->
+      <div id="editor-props-bar" class="editor-props-bar" style="display: none;">
+        <!-- Text Properties -->
+        <div id="props-text-controls" style="display: none; align-items: center; gap: 8px; flex-wrap: wrap;">
+          <span style="font-size: 11px; font-weight: 700; color: var(--color-text-muted);">FONT:</span>
+          <select id="prop-text-font" class="input-field-sm" onchange="updateSelectedTextProp('font', this.value)">
+            <option value="Helvetica">Helvetica (Sans)</option>
+            <option value="Times">Times Roman (Serif)</option>
+            <option value="Courier">Courier (Mono)</option>
+          </select>
+          <select id="prop-text-size" class="input-field-sm" onchange="updateSelectedTextProp('size', this.value)">
+            <option value="10">10pt</option>
+            <option value="12">12pt</option>
+            <option value="14">14pt</option>
+            <option value="16">16pt</option>
+            <option value="18">18pt</option>
+            <option value="22">22pt</option>
+            <option value="28">28pt</option>
+            <option value="36">36pt</option>
+          </select>
+          <div style="display: flex; align-items: center; gap: 4px;">
+            <button type="button" class="style-toggle-btn" id="prop-text-bold" onclick="toggleSelectedTextStyle('bold')"><b>B</b></button>
+            <button type="button" class="style-toggle-btn" id="prop-text-italic" onclick="toggleSelectedTextStyle('italic')"><i>I</i></button>
+          </div>
+          <div style="display: flex; align-items: center; gap: 5px; margin-left: 4px;">
+            <span class="color-dot active" style="background: #000000;" onclick="updateSelectedTextProp('color', '#000000')"></span>
+            <span class="color-dot" style="background: #2173a8;" onclick="updateSelectedTextProp('color', '#2173a8')"></span>
+            <span class="color-dot" style="background: #dc2626;" onclick="updateSelectedTextProp('color', '#dc2626')"></span>
+            <span class="color-dot" style="background: #16a34a;" onclick="updateSelectedTextProp('color', '#16a34a')"></span>
+            <span class="color-dot" style="background: #ea580c;" onclick="updateSelectedTextProp('color', '#ea580c')"></span>
+          </div>
+        </div>
+
+        <!-- Whiteout Properties -->
+        <div id="props-whiteout-controls" style="display: none; align-items: center; gap: 8px;">
+          <span style="font-size: 11px; font-weight: 700; color: var(--color-text-muted);">WARNA PENUTUP:</span>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="updateSelectedWhiteoutColor('#ffffff')">⬜ Putih (Whiteout)</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="updateSelectedWhiteoutColor('#000000')">⬛ Hitam (Redaksi)</button>
+        </div>
+
+        <!-- Image / Stamp Properties -->
+        <div id="props-image-controls" style="display: none; align-items: center; gap: 8px;">
+          <span style="font-size: 11px; font-weight: 700; color: var(--color-text-muted);">UKURAN:</span>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="resizeSelectedElement(0.85)">－ Kecilkan</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="resizeSelectedElement(1.15)">＋ Besarkan</button>
+        </div>
+
+        <button type="button" class="btn btn-danger btn-sm" onclick="deleteSelectedEditorItem()" style="margin-left: auto;">
+          ✕ Hapus Elemen Ini
+        </button>
+      </div>
+
+      <!-- Main Canvas Viewport Area -->
+      <div class="editor-viewport" id="editor-viewport">
+        <div class="editor-canvas-stage" id="editor-canvas-stage">
+          <canvas id="editor-pdf-canvas"></canvas>
+          <div id="editor-overlay" class="editor-overlay"></div>
+        </div>
+      </div>
+
+      <!-- Helper info bar -->
+      <div class="editor-helper-bar" id="editor-helper-bar">
+        💡 <span id="editor-helper-text">Klik pada teks atau tambahkan elemen untuk mulai mengedit. Tarik elemen untuk memindahkan posisi.</span>
       </div>
     </div>
 
@@ -1244,8 +1676,18 @@
 
     function showScreen(screenId) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.getElementById(screenId).classList.add('active');
+      const target = document.getElementById(screenId);
+      if (target) target.classList.add('active');
       window.scrollTo(0, 0);
+
+      const bnav = document.querySelector('.mobile-bottom-nav');
+      if (bnav) {
+        if (screenId === 'screen-pdf-editor') {
+          bnav.style.display = 'none';
+        } else if (window.innerWidth <= 768) {
+          bnav.style.display = 'flex';
+        }
+      }
     }
 
     function openTool(tool) {
@@ -1424,8 +1866,42 @@
           rotation: 0
         });
       }
-      renderStagedFiles();
-      showScreen('screen-stage');
+      if (currentTool === 'edit_pdf' && stagedFiles.length > 0) {
+        initPdfEditorStudio(stagedFiles[0]);
+      } else {
+        renderStagedFiles();
+        showScreen('screen-stage');
+      }
+    }
+
+    async function ensurePdfJs() {
+      if (typeof pdfjsLib !== 'undefined') {
+        if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+          pdfjsLib.GlobalWorkerOptions.workerSrc = 'js/pdf.worker.min.js';
+        }
+        return pdfjsLib;
+      }
+      const sources = [
+        'js/pdf.min.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
+        'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js'
+      ];
+      for (const src of sources) {
+        try {
+          await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = src;
+            script.onload = () => resolve();
+            script.onerror = () => reject();
+            document.head.appendChild(script);
+          });
+          if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'js/pdf.worker.min.js';
+            return pdfjsLib;
+          }
+        } catch (e) {}
+      }
+      throw new Error('Komponen PDF.js belum siap. Silakan muat ulang halaman atau periksa koneksi.');
     }
 
     async function ensurePdfLib() {
@@ -1533,8 +2009,12 @@
         { id: 'sample-2', name: 'Document_Part2.pdf', size: bytes2.byteLength, type: 'application/pdf', buffer: bytes2.buffer, rotation: 0 }
       ];
 
-      renderStagedFiles();
-      showScreen('screen-stage');
+      if (currentTool === 'edit_pdf') {
+        initPdfEditorStudio(stagedFiles[0]);
+      } else {
+        renderStagedFiles();
+        showScreen('screen-stage');
+      }
     }
 
     async function prepareImageForPdf(fileItem, pdfDoc) {
@@ -1830,6 +2310,10 @@
     // Execution Pipeline
     async function runProcessingPipeline() {
       if (stagedFiles.length === 0) return;
+      if (currentTool === 'edit_pdf') {
+        initPdfEditorStudio(stagedFiles[0]);
+        return;
+      }
       showScreen('screen-processing');
       
       const barFill = document.getElementById('processing-bar-fill');
@@ -2205,9 +2689,796 @@
     }
 
     function openQrModal() { document.getElementById('qr-modal').classList.add('active'); }
-    function closeQrModal() { document.getElementById('qr-modal').classList.remove('active'); }
-    function openAuthModal() { document.getElementById('auth-modal').classList.add('active'); }
-    function closeAuthModal() { document.getElementById('auth-modal').classList.remove('active'); }
+    // ==========================================
+    // VISUAL INTERACTIVE PDF EDITOR STUDIO ENGINE
+    // ==========================================
+    let editorDoc = null;
+    let editorPdfBytes = null;
+    let editorDocFileName = 'Dokumen.pdf';
+    let editorTotalPages = 1;
+    let editorCurrentPageNum = 1;
+    let editorScale = 1.25;
+    let editorSelectedItemId = null;
+    let editorMode = 'select'; // 'select' | 'addtext' | 'whiteout'
+    let editorPagesEdits = {}; // { [pageNum]: Array<Item> }
+    let editorCanvasWidth = 0;
+    let editorCanvasHeight = 0;
+    let editorPdfPageOriginalWidth = 0;
+    let editorPdfPageOriginalHeight = 0;
+    let editorStageListenerAttached = false;
+
+    async function initPdfEditorStudio(fileItem) {
+      if (!fileItem || !fileItem.buffer) {
+        alert('Silakan pilih file PDF terlebih dahulu.');
+        return;
+      }
+      editorPdfBytes = fileItem.buffer;
+      editorDocFileName = fileItem.name || 'Dokumen.pdf';
+      const titleEl = document.getElementById('editor-doc-title');
+      if (titleEl) titleEl.innerText = editorDocFileName;
+
+      editorPagesEdits = {};
+      editorCurrentPageNum = 1;
+      editorSelectedItemId = null;
+      editorMode = 'select';
+
+      try {
+        const pjs = await ensurePdfJs();
+        const loadingTask = pjs.getDocument({ data: new Uint8Array(editorPdfBytes) });
+        editorDoc = await loadingTask.promise;
+        editorTotalPages = editorDoc.numPages;
+
+        showScreen('screen-pdf-editor');
+        await renderEditorCurrentPage();
+
+        if (!editorStageListenerAttached) {
+          const stage = document.getElementById('editor-canvas-stage');
+          if (stage) {
+            stage.addEventListener('click', (e) => {
+              if (e.target.id === 'editor-pdf-canvas' || e.target.id === 'editor-overlay') {
+                const rect = stage.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const clickY = e.clientY - rect.top;
+                if (editorMode === 'addtext') {
+                  addEditorTextItem('Ketik teks di sini...', clickX, clickY);
+                  setEditorMode('select');
+                } else if (editorMode === 'whiteout') {
+                  addEditorWhiteoutBox(clickX, clickY, 180, 36);
+                  setEditorMode('select');
+                } else {
+                  selectEditorItem(null);
+                }
+              }
+            });
+            editorStageListenerAttached = true;
+          }
+        }
+      } catch (err) {
+        console.error('Gagal membuka PDF di visual editor:', err);
+        alert('Gagal memuat PDF ke visual editor: ' + err.message);
+      }
+    }
+
+    function exitPdfEditor() {
+      if (confirm('Keluar dari Visual Editor PDF? Perubahan yang belum disimpan akan hilang.')) {
+        showScreen('screen-stage');
+      }
+    }
+
+    async function changeEditorPage(delta) {
+      const target = editorCurrentPageNum + delta;
+      if (target < 1 || target > editorTotalPages) return;
+      editorCurrentPageNum = target;
+      editorSelectedItemId = null;
+      await renderEditorCurrentPage();
+    }
+
+    function zoomEditor(delta) {
+      const newScale = Math.min(2.5, Math.max(0.6, editorScale + delta));
+      if (Math.abs(newScale - editorScale) < 0.01) return;
+      editorScale = newScale;
+      document.getElementById('editor-zoom-label').innerText = Math.round(editorScale * 100) + '%';
+      renderEditorCurrentPage();
+    }
+
+    function setEditorMode(mode) {
+      editorMode = mode;
+      document.querySelectorAll('.ribbon-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById('tool-mode-' + mode);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      const helper = document.getElementById('editor-helper-text');
+      if (mode === 'select') {
+        helper.innerText = 'Mode Pilih/Geser: Klik elemen untuk memilih, tarik untuk memindahkan posisi.';
+      } else if (mode === 'addtext') {
+        helper.innerText = 'Mode Tambah Teks: Klik pada posisi dokumen yang diinginkan untuk meletakkan teks.';
+      } else if (mode === 'whiteout') {
+        helper.innerText = 'Mode Hapus/Whiteout: Klik pada dokumen untuk meletakkan kotak penutup putih.';
+      }
+    }
+
+    async function renderEditorCurrentPage() {
+      if (!editorDoc) return;
+      document.getElementById('editor-page-info').innerText = `Halaman ${editorCurrentPageNum} / ${editorTotalPages}`;
+      
+      const page = await editorDoc.getPage(editorCurrentPageNum);
+      const viewport = page.getViewport({ scale: editorScale });
+      
+      const canvas = document.getElementById('editor-pdf-canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      editorCanvasWidth = viewport.width;
+      editorCanvasHeight = viewport.height;
+
+      const unscaledViewport = page.getViewport({ scale: 1 });
+      editorPdfPageOriginalWidth = unscaledViewport.width;
+      editorPdfPageOriginalHeight = unscaledViewport.height;
+
+      const stage = document.getElementById('editor-canvas-stage');
+      stage.style.width = viewport.width + 'px';
+      stage.style.height = viewport.height + 'px';
+
+      const renderCtx = { canvasContext: ctx, viewport: viewport };
+      await page.render(renderCtx).promise;
+
+      renderEditorOverlay();
+    }
+
+    function getPageEdits() {
+      if (!editorPagesEdits[editorCurrentPageNum]) {
+        editorPagesEdits[editorCurrentPageNum] = [];
+      }
+      return editorPagesEdits[editorCurrentPageNum];
+    }
+
+    function renderEditorOverlay() {
+      const overlay = document.getElementById('editor-overlay');
+      overlay.innerHTML = '';
+
+      const items = getPageEdits();
+
+      items.forEach(item => {
+        const el = document.createElement('div');
+        el.className = 'editor-item ' + (item.id === editorSelectedItemId ? 'selected' : '');
+        el.id = 'editor-item-' + item.id;
+        el.style.left = item.x + 'px';
+        el.style.top = item.y + 'px';
+
+        if (item.type === 'text') {
+          el.classList.add('editor-text-item');
+          el.style.fontSize = (item.fontSize || 14) + 'px';
+          el.style.color = item.color || '#000000';
+          el.style.fontFamily = getFontFamilyCss(item.fontFamily);
+          el.style.fontWeight = item.bold ? '700' : '400';
+          el.style.fontStyle = item.italic ? 'italic' : 'normal';
+
+          const textInput = document.createElement('textarea');
+          textInput.className = 'editor-text-input';
+          textInput.value = item.text;
+          textInput.rows = (item.text.split('\n').length || 1);
+          textInput.oninput = function() {
+            item.text = this.value;
+            this.rows = (this.value.split('\n').length || 1);
+          };
+          textInput.onfocus = function() {
+            selectEditorItem(item.id);
+          };
+          el.appendChild(textInput);
+
+        } else if (item.type === 'whiteout') {
+          el.classList.add('editor-whiteout-item');
+          if (item.bgColor === '#000000') el.classList.add('black');
+          el.style.width = item.width + 'px';
+          el.style.height = item.height + 'px';
+
+          const rh = document.createElement('div');
+          rh.className = 'resize-handle';
+          attachResizeListener(rh, item, el);
+          el.appendChild(rh);
+
+        } else if (item.type === 'image') {
+          el.classList.add('editor-img-item');
+          el.style.width = item.width + 'px';
+          el.style.height = item.height + 'px';
+          const img = document.createElement('img');
+          img.src = item.imgDataUrl;
+          el.appendChild(img);
+
+          const rh = document.createElement('div');
+          rh.className = 'resize-handle';
+          attachResizeListener(rh, item, el);
+          el.appendChild(rh);
+
+        } else if (item.type === 'stamp') {
+          el.classList.add('editor-stamp-item');
+          el.innerText = item.text;
+          el.style.color = item.stampColor || '#16a34a';
+          el.style.borderColor = item.stampColor || '#16a34a';
+          el.style.width = item.width + 'px';
+        }
+
+        attachDragListeners(el, item);
+        overlay.appendChild(el);
+      });
+
+      updatePropsBar();
+    }
+
+    function getFontFamilyCss(family) {
+      if (family === 'Times') return "'Times New Roman', Times, serif";
+      if (family === 'Courier') return "Courier, monospace";
+      return "Helvetica, Arial, sans-serif";
+    }
+
+    function selectEditorItem(id) {
+      editorSelectedItemId = id;
+      document.querySelectorAll('.editor-item').forEach(el => {
+        if (el.id === 'editor-item-' + id) el.classList.add('selected');
+        else el.classList.remove('selected');
+      });
+      const delBtn = document.getElementById('tool-mode-delete');
+      if (delBtn) delBtn.style.display = id ? 'inline-flex' : 'none';
+      updatePropsBar();
+    }
+
+    function getSelectedItem() {
+      if (!editorSelectedItemId) return null;
+      const items = getPageEdits();
+      return items.find(i => i.id === editorSelectedItemId) || null;
+    }
+
+    function updatePropsBar() {
+      const propsBar = document.getElementById('editor-props-bar');
+      const item = getSelectedItem();
+      if (!item) {
+        propsBar.style.display = 'none';
+        return;
+      }
+
+      propsBar.style.display = 'flex';
+      const textControls = document.getElementById('props-text-controls');
+      const whiteoutControls = document.getElementById('props-whiteout-controls');
+      const imageControls = document.getElementById('props-image-controls');
+
+      textControls.style.display = 'none';
+      whiteoutControls.style.display = 'none';
+      imageControls.style.display = 'none';
+
+      if (item.type === 'text') {
+        textControls.style.display = 'flex';
+        document.getElementById('prop-text-font').value = item.fontFamily || 'Helvetica';
+        document.getElementById('prop-text-size').value = item.fontSize || 14;
+        document.getElementById('prop-text-bold').classList.toggle('active', !!item.bold);
+        document.getElementById('prop-text-italic').classList.toggle('active', !!item.italic);
+      } else if (item.type === 'whiteout') {
+        whiteoutControls.style.display = 'flex';
+      } else if (item.type === 'image' || item.type === 'stamp') {
+        imageControls.style.display = 'flex';
+      }
+    }
+
+    function updateSelectedTextProp(prop, value) {
+      const item = getSelectedItem();
+      if (!item || item.type !== 'text') return;
+      if (prop === 'font') item.fontFamily = value;
+      else if (prop === 'size') item.fontSize = parseInt(value) || 14;
+      else if (prop === 'color') item.color = value;
+      renderEditorOverlay();
+    }
+
+    function toggleSelectedTextStyle(style) {
+      const item = getSelectedItem();
+      if (!item || item.type !== 'text') return;
+      if (style === 'bold') item.bold = !item.bold;
+      else if (style === 'italic') item.italic = !item.italic;
+      renderEditorOverlay();
+    }
+
+    function updateSelectedWhiteoutColor(color) {
+      const item = getSelectedItem();
+      if (!item || item.type !== 'whiteout') return;
+      item.bgColor = color;
+      renderEditorOverlay();
+    }
+
+    function resizeSelectedElement(factor) {
+      const item = getSelectedItem();
+      if (!item) return;
+      item.width = Math.round(item.width * factor);
+      item.height = Math.round(item.height * factor);
+      renderEditorOverlay();
+    }
+
+    function deleteSelectedEditorItem() {
+      if (!editorSelectedItemId) return;
+      const items = getPageEdits();
+      const idx = items.findIndex(i => i.id === editorSelectedItemId);
+      if (idx !== -1) {
+        items.splice(idx, 1);
+        editorSelectedItemId = null;
+        renderEditorOverlay();
+      }
+    }
+
+    function addEditorTextItem(customText, customX, customY, customFontSize, customColor) {
+      const stage = document.getElementById('editor-canvas-stage');
+      const defaultX = customX !== undefined ? customX : Math.max(30, (stage.clientWidth / 2) - 100);
+      const defaultY = customY !== undefined ? customY : Math.max(40, (stage.clientHeight / 2) - 20);
+
+      const newItem = {
+        id: 'txt_' + Math.random().toString(36).substr(2, 9),
+        type: 'text',
+        x: defaultX,
+        y: defaultY,
+        width: 220,
+        height: 32,
+        text: customText || 'Ketik teks di sini...',
+        fontSize: customFontSize || 16,
+        color: customColor || '#000000',
+        fontFamily: 'Helvetica',
+        bold: false,
+        italic: false
+      };
+
+      getPageEdits().push(newItem);
+      selectEditorItem(newItem.id);
+      renderEditorOverlay();
+
+      setTimeout(() => {
+        const el = document.getElementById('editor-item-' + newItem.id);
+        if (el) {
+          const ta = el.querySelector('textarea');
+          if (ta) {
+            ta.focus();
+            ta.select();
+          }
+        }
+      }, 50);
+    }
+
+    function addEditorWhiteoutBox(customX, customY, customW, customH) {
+      const stage = document.getElementById('editor-canvas-stage');
+      const defaultX = customX !== undefined ? customX : Math.max(30, (stage.clientWidth / 2) - 90);
+      const defaultY = customY !== undefined ? customY : Math.max(40, (stage.clientHeight / 2) - 20);
+
+      const newItem = {
+        id: 'wo_' + Math.random().toString(36).substr(2, 9),
+        type: 'whiteout',
+        x: defaultX,
+        y: defaultY,
+        width: customW || 180,
+        height: customH || 36,
+        bgColor: '#ffffff'
+      };
+
+      getPageEdits().push(newItem);
+      selectEditorItem(newItem.id);
+      renderEditorOverlay();
+    }
+
+    function handleEditorImageUpload(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const dataUrl = e.target.result;
+        const arrayBuf = await file.arrayBuffer();
+
+        const stage = document.getElementById('editor-canvas-stage');
+        const defaultX = Math.max(30, (stage.clientWidth / 2) - 80);
+        const defaultY = Math.max(40, (stage.clientHeight / 2) - 50);
+
+        const newItem = {
+          id: 'img_' + Math.random().toString(36).substr(2, 9),
+          type: 'image',
+          x: defaultX,
+          y: defaultY,
+          width: 160,
+          height: 100,
+          imgDataUrl: dataUrl,
+          imgBuffer: arrayBuf,
+          imgMime: file.type || 'image/png'
+        };
+
+        getPageEdits().push(newItem);
+        selectEditorItem(newItem.id);
+        renderEditorOverlay();
+      };
+      reader.readAsDataURL(file);
+      event.target.value = '';
+    }
+
+    function toggleStampMenu() {
+      const menu = document.getElementById('editor-stamp-menu');
+      menu.style.display = (menu.style.display === 'none') ? 'block' : 'none';
+    }
+
+    function addEditorStamp(type) {
+      toggleStampMenu();
+      const stage = document.getElementById('editor-canvas-stage');
+      const defaultX = Math.max(30, (stage.clientWidth / 2) - 90);
+      const defaultY = Math.max(40, (stage.clientHeight / 2) - 25);
+
+      const stampMap = {
+        APPROVED: { text: '✔ APPROVED / DISETUJUI', color: '#16a34a' },
+        CONFIDENTIAL: { text: '🔒 CONFIDENTIAL / RAHASIA', color: '#dc2626' },
+        LUNAS: { text: '✔ LUNAS / PAID', color: '#2173a8' },
+        DRAFT: { text: '✎ DRAFT / KONSEP', color: '#4338ca' },
+        DATE: { text: '📅 ' + new Date().toLocaleDateString('id-ID'), color: '#334155' }
+      };
+
+      const s = stampMap[type] || stampMap.APPROVED;
+      const newItem = {
+        id: 'stamp_' + Math.random().toString(36).substr(2, 9),
+        type: 'stamp',
+        x: defaultX,
+        y: defaultY,
+        width: 180,
+        height: 32,
+        text: s.text,
+        stampColor: s.color
+      };
+
+      getPageEdits().push(newItem);
+      selectEditorItem(newItem.id);
+      renderEditorOverlay();
+    }
+
+    // Existing Text Detection and In-Place Editing
+    async function detectAndEnablePdfTextEditing() {
+      if (!editorDoc) return;
+      const helper = document.getElementById('editor-helper-text');
+      helper.innerHTML = '⏳ <i>Mendeteksi baris teks PDF...</i>';
+
+      try {
+        const page = await editorDoc.getPage(editorCurrentPageNum);
+        const textContent = await page.getTextContent();
+        const viewport = page.getViewport({ scale: editorScale });
+
+        document.querySelectorAll('.editor-detected-text').forEach(e => e.remove());
+
+        let detectedCount = 0;
+        const overlay = document.getElementById('editor-overlay');
+
+        textContent.items.forEach(item => {
+          if (!item.str || !item.str.trim()) return;
+
+          const pdfX = item.transform[4];
+          const pdfY = item.transform[5];
+          const fontSize = item.transform[0] || item.height || 12;
+          
+          const [viewX, viewY] = viewport.convertToViewportPoint(pdfX, pdfY);
+          const viewW = item.width * editorScale;
+          const viewH = fontSize * editorScale;
+          const topY = viewY - viewH;
+
+          const box = document.createElement('div');
+          box.className = 'editor-detected-text';
+          box.style.left = Math.max(0, viewX - 2) + 'px';
+          box.style.top = Math.max(0, topY - 2) + 'px';
+          box.style.width = Math.max(20, viewW + 4) + 'px';
+          box.style.height = Math.max(14, viewH + 4) + 'px';
+          box.title = `Klik untuk edit: "${item.str}"`;
+
+          box.onclick = (e) => {
+            e.stopPropagation();
+            box.remove();
+            addEditorWhiteoutBox(Math.max(0, viewX - 2), Math.max(0, topY - 2), Math.max(20, viewW + 4), Math.max(14, viewH + 4));
+            addEditorTextItem(item.str, viewX, topY, Math.round(fontSize), '#000000');
+            helper.innerHTML = '✅ <b>Teks siap diedit & digeser!</b> Ketik kata baru atau tarik kotak untuk memindahkan posisinya.';
+          };
+
+          overlay.appendChild(box);
+          detectedCount++;
+        });
+
+        if (detectedCount > 0) {
+          helper.innerHTML = `✅ Ditemukan <b>${detectedCount}</b> elemen teks! Klik kotak garis putus-putus pada dokumen untuk langsung mengedit atau memindahkan isinya.`;
+        } else {
+          helper.innerText = 'Tidak ditemukan teks digital pada halaman ini (mungkin dokumen berupa hasil scan gambar). Anda tetap bisa memakai "+ Teks Baru" atau "Hapus Area".';
+        }
+      } catch (err) {
+        console.error('Error detecting text:', err);
+        helper.innerText = 'Gagal mendeteksi teks: ' + err.message;
+      }
+    }
+
+    // Attach drag listener to editor items
+    function attachDragListeners(element, item) {
+      let isDragging = false;
+      let startX = 0, startY = 0;
+      let origX = item.x, origY = item.y;
+
+      function onStart(clientX, clientY) {
+        isDragging = true;
+        startX = clientX;
+        startY = clientY;
+        origX = item.x;
+        origY = item.y;
+      }
+
+      function onMove(clientX, clientY) {
+        if (!isDragging) return;
+        const dx = clientX - startX;
+        const dy = clientY - startY;
+        item.x = Math.max(0, origX + dx);
+        item.y = Math.max(0, origY + dy);
+        element.style.left = item.x + 'px';
+        element.style.top = item.y + 'px';
+      }
+
+      function onEnd() {
+        isDragging = false;
+      }
+
+      element.addEventListener('mousedown', (e) => {
+        if (e.target.tagName === 'TEXTAREA' || e.target.classList.contains('resize-handle')) {
+          selectEditorItem(item.id);
+          return;
+        }
+        e.preventDefault();
+        selectEditorItem(item.id);
+        onStart(e.clientX, e.clientY);
+
+        function handleMouseMove(ev) { onMove(ev.clientX, ev.clientY); }
+        function handleMouseUp() {
+          onEnd();
+          window.removeEventListener('mousemove', handleMouseMove);
+          window.removeEventListener('mouseup', handleMouseUp);
+        }
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('mouseup', handleMouseUp);
+      });
+
+      element.addEventListener('touchstart', (e) => {
+        if (e.target.tagName === 'TEXTAREA' || e.target.classList.contains('resize-handle')) {
+          selectEditorItem(item.id);
+          return;
+        }
+        selectEditorItem(item.id);
+        const t = e.touches[0];
+        onStart(t.clientX, t.clientY);
+
+        function handleTouchMove(ev) {
+          ev.preventDefault();
+          const touch = ev.touches[0];
+          onMove(touch.clientX, touch.clientY);
+        }
+        function handleTouchEnd() {
+          onEnd();
+          window.removeEventListener('touchmove', handleTouchMove);
+          window.removeEventListener('touchend', handleTouchEnd);
+        }
+        window.addEventListener('touchmove', handleTouchMove, { passive: false });
+        window.addEventListener('touchend', handleTouchEnd);
+      });
+    }
+
+    // Attach resize listener to whiteout / image elements
+    function attachResizeListener(handleEl, item, parentEl) {
+      handleEl.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        let startX = e.clientX, startY = e.clientY;
+        let startW = item.width, startH = item.height;
+
+        function onMouseMove(ev) {
+          item.width = Math.max(20, startW + (ev.clientX - startX));
+          item.height = Math.max(16, startH + (ev.clientY - startY));
+          parentEl.style.width = item.width + 'px';
+          parentEl.style.height = item.height + 'px';
+        }
+        function onMouseUp() {
+          window.removeEventListener('mousemove', onMouseMove);
+          window.removeEventListener('mouseup', onMouseUp);
+        }
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('mouseup', handleMouseUp);
+      });
+
+      handleEl.addEventListener('touchstart', (e) => {
+        e.stopPropagation();
+        const t = e.touches[0];
+        let startX = t.clientX, startY = t.clientY;
+        let startW = item.width, startH = item.height;
+
+        function onTouchMove(ev) {
+          ev.preventDefault();
+          const touch = ev.touches[0];
+          item.width = Math.max(20, startW + (touch.clientX - startX));
+          item.height = Math.max(16, startH + (touch.clientY - startY));
+          parentEl.style.width = item.width + 'px';
+          parentEl.style.height = item.height + 'px';
+        }
+        function onTouchEnd() {
+          window.removeEventListener('touchmove', onTouchMove);
+          window.removeEventListener('touchend', onTouchEnd);
+        }
+        window.addEventListener('touchmove', handleTouchMove, { passive: false });
+        window.addEventListener('touchend', handleTouchEnd);
+      });
+    }
+
+    // Helper: Parse Hex to RGB for pdf-lib
+    function parseHexToRgb(hex) {
+      hex = (hex || '#000000').replace('#', '');
+      if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+      const num = parseInt(hex, 16) || 0;
+      if (typeof PDFLib !== 'undefined' && PDFLib.rgb) {
+        return PDFLib.rgb(((num >> 16) & 255) / 255, ((num >> 8) & 255) / 255, (num & 255) / 255);
+      }
+      return { red: ((num >> 16) & 255) / 255, green: ((num >> 8) & 255) / 255, blue: (num & 255) / 255 };
+    }
+
+    // Save and Bake all Edits into Real PDF Bytes
+    async function savePdfEditorChanges() {
+      if (!editorPdfBytes) return;
+      const helper = document.getElementById('editor-helper-text');
+      helper.innerHTML = '⏳ <i>Menerapkan seluruh perubahan dan menghasilkan PDF baru...</i>';
+
+      try {
+        const lib = await ensurePdfLib();
+        const { PDFDocument, rgb, StandardFonts } = lib;
+        const pdfDoc = await PDFDocument.load(editorPdfBytes, { ignoreEncryption: true });
+
+        const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
+        const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+        const timesRoman = await pdfDoc.embedFont(StandardFonts.TimesRoman);
+        const timesRomanBold = await pdfDoc.embedFont(StandardFonts.TimesRomanBold);
+        const courier = await pdfDoc.embedFont(StandardFonts.Courier);
+        const courierBold = await pdfDoc.embedFont(StandardFonts.CourierBold);
+
+        const pages = pdfDoc.getPages();
+
+        for (let pNum = 1; pNum <= pages.length; pNum++) {
+          const edits = editorPagesEdits[pNum] || [];
+          if (edits.length === 0) continue;
+
+          const page = pages[pNum - 1];
+          const { width: pWidth, height: pHeight } = page.getSize();
+          
+          const scaleX = pWidth / editorCanvasWidth;
+          const scaleY = pHeight / editorCanvasHeight;
+
+          // PASS 1: Whiteout / Eraser Rectangles (deletes/covers underneath content)
+          for (const item of edits) {
+            if (item.type === 'whiteout') {
+              const pdfX = item.x * scaleX;
+              const pdfY = pHeight - ((item.y + item.height) * scaleY);
+              const pdfW = item.width * scaleX;
+              const pdfH = item.height * scaleY;
+              const isBlack = (item.bgColor === '#000000');
+              page.drawRectangle({
+                x: pdfX,
+                y: pdfY,
+                width: pdfW,
+                height: pdfH,
+                color: isBlack ? rgb(0, 0, 0) : rgb(1, 1, 1),
+                borderWidth: 0
+              });
+            }
+          }
+
+          // PASS 2: Images and Stamps
+          for (const item of edits) {
+            if (item.type === 'image' && item.imgBuffer) {
+              let embeddedImg;
+              try {
+                if (item.imgMime === 'image/jpeg' || item.imgMime === 'image/jpg') {
+                  embeddedImg = await pdfDoc.embedJpg(item.imgBuffer);
+                } else {
+                  embeddedImg = await pdfDoc.embedPng(item.imgBuffer);
+                }
+              } catch (eImg) {
+                embeddedImg = await pdfDoc.embedPng(item.imgBuffer);
+              }
+              const pdfX = item.x * scaleX;
+              const pdfY = pHeight - ((item.y + item.height) * scaleY);
+              const pdfW = item.width * scaleX;
+              const pdfH = item.height * scaleY;
+              page.drawImage(embeddedImg, { x: pdfX, y: pdfY, width: pdfW, height: pdfH });
+
+            } else if (item.type === 'stamp') {
+              const pdfX = item.x * scaleX;
+              const pdfY = pHeight - ((item.y + item.height) * scaleY);
+              const pdfW = item.width * scaleX;
+              const pdfH = item.height * scaleY;
+              const sColor = parseHexToRgb(item.stampColor || '#16a34a');
+              page.drawRectangle({
+                x: pdfX,
+                y: pdfY,
+                width: pdfW,
+                height: pdfH,
+                color: rgb(1, 1, 1),
+                borderColor: sColor,
+                borderWidth: 2
+              });
+              const fSize = Math.max(9, Math.round(11 * scaleY));
+              page.drawText(item.text, {
+                x: pdfX + (8 * scaleX),
+                y: pdfY + (pdfH / 2) - (fSize / 3),
+                size: fSize,
+                font: helveticaBold,
+                color: sColor
+              });
+            }
+          }
+
+          // PASS 3: Modified and Added Text
+          for (const item of edits) {
+            if (item.type === 'text' && item.text && item.text.trim()) {
+              let chosenFont = helvetica;
+              if (item.fontFamily === 'Times') chosenFont = item.bold ? timesRomanBold : timesRoman;
+              else if (item.fontFamily === 'Courier') chosenFont = item.bold ? courierBold : courier;
+              else chosenFont = item.bold ? helveticaBold : helvetica;
+
+              const pdfX = item.x * scaleX;
+              const pdfH = item.height * scaleY;
+              const pdfY = pHeight - ((item.y + item.height) * scaleY);
+              const pdfFontSize = Math.max(8, (item.fontSize || 14) * scaleY);
+              const textColor = parseHexToRgb(item.color || '#000000');
+
+              const lines = item.text.split('\n');
+              const lineHeight = pdfFontSize * 1.25;
+              lines.forEach((line, lineIdx) => {
+                const lineY = pdfY + pdfH - pdfFontSize - (lineIdx * lineHeight);
+                page.drawText(line, {
+                  x: pdfX,
+                  y: Math.max(10, lineY),
+                  size: pdfFontSize,
+                  font: chosenFont,
+                  color: textColor
+                });
+              });
+            }
+          }
+        }
+
+        const finalPdfBytes = await pdfDoc.save({ useObjectStreams: true });
+        processedFilename = `multipdf_edited_${Date.now()}.pdf`;
+
+        const blob = new Blob([finalPdfBytes], { type: 'application/pdf' });
+        if (processedBlobUrl) URL.revokeObjectURL(processedBlobUrl);
+        processedBlobUrl = URL.createObjectURL(blob);
+
+        document.getElementById('download-summary-text').innerText = 
+          `Dokumen PDF berhasil diedit dan diperbarui: ${(blob.size / 1024).toFixed(1)} KB output siap diunduh.`;
+
+        showScreen('screen-download');
+      } catch (err) {
+        console.error('Gagal menyimpan PDF:', err);
+        alert('Gagal menyimpan perubahan PDF: ' + err.message);
+      }
+    }
+
+    // Keyboard navigation and delete listener
+    window.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (editorSelectedItemId) {
+          e.preventDefault();
+          deleteSelectedEditorItem();
+        }
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+        const item = getSelectedItem();
+        if (item) {
+          e.preventDefault();
+          const step = e.shiftKey ? 10 : 2;
+          if (e.key === 'ArrowLeft') item.x = Math.max(0, item.x - step);
+          if (e.key === 'ArrowRight') item.x += step;
+          if (e.key === 'ArrowUp') item.y = Math.max(0, item.y - step);
+          if (e.key === 'ArrowDown') item.y += step;
+          const el = document.getElementById('editor-item-' + item.id);
+          if (el) {
+            el.style.left = item.x + 'px';
+            el.style.top = item.y + 'px';
+          }
+        }
+      }
+    });
 
     // Android PWA & Mobile Navigation
     function navBottomClick(cat, btn) {
