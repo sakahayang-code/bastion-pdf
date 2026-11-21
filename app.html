@@ -6,13 +6,15 @@
   <title>MultiPDF - Sovereign Client-Side Document Workstation</title>
   <!-- Android PWA Manifest & Mobile App Meta -->
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#4338ca">
+  <meta name="theme-color" content="#2173a8">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="MultiPDF">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+  <link rel="icon" type="image/png" href="icons/logo-emblem.png">
   <!-- Local Self-Hosted PDF-Lib, JSZip, and PDF.js with Multi-CDN Resilient Fallbacks -->
   <script src="js/pdf-lib.min.js"></script>
   <script src="js/jszip.min.js"></script>
@@ -103,6 +105,24 @@
       color: var(--color-accent);
       cursor: pointer;
       text-decoration: none;
+    }
+    .app-logo-img {
+      height: 32px;
+      width: auto;
+      max-width: 175px;
+      object-fit: contain;
+      display: block;
+    }
+    .app-logo-badge {
+      font-size: 15px;
+      font-weight: 800;
+      color: #2173a8;
+      background: rgba(33, 115, 168, 0.1);
+      padding: 2px 7px;
+      border-radius: 6px;
+      letter-spacing: 0.5px;
+      display: inline-flex;
+      align-items: center;
     }
     .logo-icon {
       width: 32px;
@@ -587,6 +607,14 @@
         border-bottom: 1px solid var(--color-border);
         box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
       }
+      .app-logo-img {
+        height: 26px !important;
+        max-width: 145px !important;
+      }
+      .app-logo-badge {
+        font-size: 13px !important;
+        padding: 1px 5px !important;
+      }
       .nav-links, .top-nav > div:last-child {
         display: none !important;
       }
@@ -726,8 +754,8 @@
   <!-- Top Navigation -->
   <nav class="top-nav">
     <a class="logo-wrap" onclick="showScreen('screen-home')">
-      <div class="logo-icon">M</div>
-      <span>Multi<span style="color: var(--color-accent);">PDF</span></span>
+      <img src="icons/logo.png" alt="Multimediatama" class="app-logo-img">
+      <span class="app-logo-badge">PDF</span>
     </a>
     <div class="nav-links">
       <a class="nav-link active" onclick="showScreen('screen-home')">All Tools</a>

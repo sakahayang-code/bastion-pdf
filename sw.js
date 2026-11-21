@@ -1,5 +1,5 @@
 // MultiPDF Android PWA Service Worker
-const CACHE_NAME = 'multipdf-v1';
+const CACHE_NAME = 'multipdf-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -8,6 +8,8 @@ const ASSETS_TO_CACHE = [
   './js/jszip.min.js',
   './js/pdf.min.js',
   './js/pdf.worker.min.js',
+  './icons/logo.png',
+  './icons/logo-emblem.png',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-512-maskable.png'
