@@ -1,7 +1,7 @@
 const { execSync } = require('child_process');
 
 console.log('====================================================');
-console.log('       BASTION PDF - FULL AUTOMATED TEST RUNNER     ');
+console.log('       MULTIPDF - FULL AUTOMATED TEST RUNNER        ');
 console.log('====================================================\n');
 
 let totalSuites = 0;

@@ -221,7 +221,7 @@ export async function protectPdfWithPassword(
   const encrypted = Buffer.concat([cipher.update(buffer), cipher.final()]);
   const tag = cipher.getAuthTag();
 
-  // Bastion PDF Encrypted Container format:
+  // MultiPDF Encrypted Container format:
   // MAGIC (4 bytes 'BPDF') + SALT (16) + IV (12) + TAG (16) + ENCRYPTED PAYLOAD
   return Buffer.concat([Buffer.from('BPDF'), salt, iv, tag, encrypted]);
 }
@@ -269,7 +269,7 @@ export async function convertPdfToWord(
     const text = fs.readFileSync(txtPath, 'utf-8');
     // Wrap plain layout text into standardized document envelope
     const docxMock = Buffer.from(
-      `[BastionPDF Word Export]\n\n${text}`,
+      `[MultiPDF Word Export]\n\n${text}`,
       'utf-8'
     );
     return { text, docxMock };

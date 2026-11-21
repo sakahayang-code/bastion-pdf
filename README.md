@@ -1,4 +1,4 @@
-# BastionPDF 🛡️📄
+# MultiPDF 🛡️📄
 
 > **Sovereign, Client-Side Document Security Workstation.**  
 > Transform sensitive legal, medical, and financial documents directly inside your browser.  
@@ -6,11 +6,11 @@
 
 ---
 
-## 🌟 Why BastionPDF?
+## 🌟 Why MultiPDF?
 
 Most popular cloud PDF converters operate on an outdated server-upload architecture: your confidential contracts, tax returns, and medical records are transmitted to third-party cloud servers, while loading hundreds of advertising trackers and cookies.
 
-**BastionPDF completely re-engineers document utilities around data sovereignty:**
+**MultiPDF completely re-engineers document utilities around data sovereignty:**
 - 🔒 **Zero Server Uploads**: Core operations run entirely in your browser memory using WebAssembly and JavaScript (`pdf-lib`). No bytes ever leave your device.
 - 🚫 **Zero Ads & Zero Trackers**: No third-party marketing cookies, no Google Analytics, no session replays. Pure speed and security.
 - ⚡ **Instant Hard Purge**: Single-click "Delete It Now" button immediately revokes and zeroes browser memory buffers.
@@ -46,7 +46,7 @@ Open [`app.html`](app.html) directly in any modern web browser (Chrome, Edge, Fi
 No installation, Node.js, or server required!
 
 ### 2. Docker Self-Hosting (1-Click)
-Run your own private BastionPDF instance on your local machine or internal corporate network:
+Run your own private MultiPDF instance on your local machine or internal corporate network:
 
 ```bash
 # Clone the repository
@@ -107,7 +107,7 @@ node test/run-all-tests.js
 ```
 ```text
 ====================================================
-       BASTION PDF - FULL AUTOMATED TEST RUNNER     
+       MULTIPDF - FULL AUTOMATED TEST RUNNER        
 ====================================================
 
 [TEST SUITE 1] PDF Transformations & Edge Cases (11/11 Passed)

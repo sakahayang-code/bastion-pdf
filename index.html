@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-  <title>BastionPDF - Sovereign Client-Side Document Workstation</title>
+  <title>MultiPDF - Sovereign Client-Side Document Workstation</title>
   <!-- Android PWA Manifest & Mobile App Meta -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#4338ca">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="BastionPDF">
+  <meta name="apple-mobile-web-app-title" content="MultiPDF">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
   <!-- Local Self-Hosted PDF-Lib, JSZip, and PDF.js with Multi-CDN Resilient Fallbacks -->
@@ -726,8 +726,8 @@
   <!-- Top Navigation -->
   <nav class="top-nav">
     <a class="logo-wrap" onclick="showScreen('screen-home')">
-      <div class="logo-icon">B</div>
-      <span>Bastion<span style="color: var(--color-accent);">PDF</span></span>
+      <div class="logo-icon">M</div>
+      <span>Multi<span style="color: var(--color-accent);">PDF</span></span>
     </a>
     <div class="nav-links">
       <a class="nav-link active" onclick="showScreen('screen-home')">All Tools</a>
@@ -1199,7 +1199,7 @@
   <!-- Auth Modal -->
   <div class="modal-backdrop" id="auth-modal">
     <div class="modal-box">
-      <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">Welcome to BastionPDF</h3>
+      <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">Welcome to MultiPDF</h3>
       <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 20px;">Access your sovereign workflows and private cloud sync.</p>
       <input type="email" placeholder="name@company.com" class="input-field">
       <input type="password" placeholder="Password" class="input-field">
@@ -1448,7 +1448,7 @@
       ctx1.fillStyle = '#ffffff';
       ctx1.font = 'bold 32px sans-serif';
       ctx1.textAlign = 'center';
-      ctx1.fillText('BastionPDF Sample Image 1', 300, 380);
+      ctx1.fillText('MultiPDF Sample Image 1', 300, 380);
       ctx1.font = '18px sans-serif';
       ctx1.fillText('JPG to PDF Conversion Test', 300, 420);
 
@@ -1461,7 +1461,7 @@
       ctx2.fillStyle = '#ffffff';
       ctx2.font = 'bold 32px sans-serif';
       ctx2.textAlign = 'center';
-      ctx2.fillText('BastionPDF Sample Image 2', 400, 280);
+      ctx2.fillText('MultiPDF Sample Image 2', 400, 280);
       ctx2.font = '18px sans-serif';
       ctx2.fillText('Landscape Layout Test', 400, 320);
 
@@ -1753,7 +1753,7 @@
       }
 
       return [
-        'Dokumen PDF berhasil diproses oleh BastionPDF.',
+        'Dokumen PDF berhasil diproses oleh MultiPDF.',
         'Waktu konversi: ' + new Date().toLocaleString('id-ID'),
         'Dokumen siap diedit di Microsoft Word atau Google Docs.'
       ];
@@ -1794,7 +1794,7 @@
 
       return [
         ['No', 'Deskripsi Kolom', 'Kategori', 'Jumlah'],
-        ['1', 'Data Baris Pertama', 'BastionPDF', '100'],
+        ['1', 'Data Baris Pertama', 'MultiPDF', '100'],
         ['2', 'Data Baris Kedua', 'Spreadsheet', '250']
       ];
     }
@@ -1829,7 +1829,7 @@
             });
           }
           finalPdfBytes = await mergedPdf.save({ useObjectStreams: true });
-          processedFilename = `bastion_merged_${Date.now()}.pdf`;
+          processedFilename = `multipdf_merged_${Date.now()}.pdf`;
 
         } else if (currentTool === 'split') {
           barFill.style.width = '60%';
@@ -1844,7 +1844,7 @@
           const copied = await subDoc.copyPages(doc, [targetIndex]);
           subDoc.addPage(copied[0]);
           finalPdfBytes = await subDoc.save();
-          processedFilename = `bastion_split_page_${targetIndex + 1}.pdf`;
+          processedFilename = `multipdf_split_page_${targetIndex + 1}.pdf`;
 
         } else if (currentTool === 'page_numbers') {
           barFill.style.width = '60%';
@@ -1866,7 +1866,7 @@
             page.drawText(text, { x, y, size: 10, font, color: rgb(0.3, 0.3, 0.3) });
           });
           finalPdfBytes = await doc.save();
-          processedFilename = `bastion_numbered_${Date.now()}.pdf`;
+          processedFilename = `multipdf_numbered_${Date.now()}.pdf`;
 
         } else if (currentTool === 'watermark') {
           barFill.style.width = '60%';
@@ -1888,7 +1888,7 @@
             });
           }
           finalPdfBytes = await doc.save();
-          processedFilename = `bastion_watermarked_${Date.now()}.pdf`;
+          processedFilename = `multipdf_watermarked_${Date.now()}.pdf`;
 
         } else if (currentTool === 'jpg_to_pdf') {
           barFill.style.width = '40%';
@@ -1961,7 +1961,7 @@
           }
 
           finalPdfBytes = await newPdf.save({ useObjectStreams: true });
-          processedFilename = `bastion_converted_${Date.now()}.pdf`;
+          processedFilename = `multipdf_converted_${Date.now()}.pdf`;
 
         } else if (currentTool === 'rotate') {
           barFill.style.width = '60%';
@@ -1973,7 +1973,7 @@
             p.setRotation(degrees(rot));
           });
           finalPdfBytes = await doc.save({ useObjectStreams: true });
-          processedFilename = `bastion_rotated_${Date.now()}.pdf`;
+          processedFilename = `multipdf_rotated_${Date.now()}.pdf`;
 
         } else if (currentTool === 'protect') {
           barFill.style.width = '60%';
@@ -1984,18 +1984,18 @@
           }
           const doc = await PDFDocument.load(stagedFiles[0].buffer, { ignoreEncryption: true });
           doc.setTitle('Protected Document');
-          doc.setSubject('Secured with BastionPDF Zero-Trace Vault');
-          doc.setProducer('BastionPDF Security Engine');
-          doc.setKeywords(['bastion-protected', 'zero-trace', 'aes-secured']);
+          doc.setSubject('Secured with MultiPDF Zero-Trace Vault');
+          doc.setProducer('MultiPDF Security Engine');
+          doc.setKeywords(['multipdf-protected', 'zero-trace', 'aes-secured']);
           finalPdfBytes = await doc.save({ useObjectStreams: true });
-          processedFilename = `bastion_protected_${Date.now()}.pdf`;
+          processedFilename = `multipdf_protected_${Date.now()}.pdf`;
 
         } else if (currentTool === 'compress') {
           barFill.style.width = '60%';
           percentEl.innerText = '60%';
           const doc = await PDFDocument.load(stagedFiles[0].buffer, { ignoreEncryption: true });
           finalPdfBytes = await doc.save({ useObjectStreams: true });
-          processedFilename = `bastion_compressed_${Date.now()}.pdf`;
+          processedFilename = `multipdf_compressed_${Date.now()}.pdf`;
 
         } else if (currentTool === 'edit_pdf') {
           barFill.style.width = '60%';
@@ -2087,7 +2087,7 @@
           }
 
           finalPdfBytes = await doc.save({ useObjectStreams: true });
-          processedFilename = `bastion_edited_${Date.now()}.pdf`;
+          processedFilename = `multipdf_edited_${Date.now()}.pdf`;
           outputMimeType = 'application/pdf';
 
         } else if (currentTool === 'pdf_to_word') {
@@ -2098,14 +2098,14 @@
 
           finalPdfBytes = buildWordDocumentBytes(lines, format);
           if (format === 'rtf') {
-            processedFilename = `bastion_word_${Date.now()}.rtf`;
+            processedFilename = `multipdf_word_${Date.now()}.rtf`;
             outputMimeType = 'application/rtf';
           } else if (format === 'txt') {
-            processedFilename = `bastion_word_${Date.now()}.txt`;
+            processedFilename = `multipdf_word_${Date.now()}.txt`;
             outputMimeType = 'text/plain;charset=utf-8';
           } else {
             // Standard Word Document
-            processedFilename = `bastion_word_${Date.now()}.doc`;
+            processedFilename = `multipdf_word_${Date.now()}.doc`;
             outputMimeType = 'application/msword';
           }
 
@@ -2117,14 +2117,14 @@
 
           finalPdfBytes = buildExcelSpreadsheetBytes(rows, format);
           if (format === 'csv') {
-            processedFilename = `bastion_sheet_${Date.now()}.csv`;
+            processedFilename = `multipdf_sheet_${Date.now()}.csv`;
             outputMimeType = 'text/csv;charset=utf-8';
           } else if (format === 'tsv') {
-            processedFilename = `bastion_sheet_${Date.now()}.tsv`;
+            processedFilename = `multipdf_sheet_${Date.now()}.tsv`;
             outputMimeType = 'text/tab-separated-values;charset=utf-8';
           } else {
             // Standard Excel Spreadsheet
-            processedFilename = `bastion_sheet_${Date.now()}.xls`;
+            processedFilename = `multipdf_sheet_${Date.now()}.xls`;
             outputMimeType = 'application/vnd.ms-excel';
           }
 
@@ -2132,7 +2132,7 @@
           // Default optimization pass
           const doc = await PDFDocument.load(stagedFiles[0].buffer, { ignoreEncryption: true });
           finalPdfBytes = await doc.save({ useObjectStreams: true });
-          processedFilename = `bastion_processed_${Date.now()}.pdf`;
+          processedFilename = `multipdf_processed_${Date.now()}.pdf`;
         }
 
         barFill.style.width = '100%';
@@ -2219,14 +2219,14 @@
         console.log('PWA install choice:', outcome);
         deferredPrompt = null;
       } else {
-        alert('Panduan PWA Android:\n\n1. Buka menu titik tiga (⋮) di Chrome Android.\n2. Pilih "Install app" atau "Tambahkan ke Layar Utama".\n3. BastionPDF akan langsung terpasang seperti aplikasi Android native!');
+        alert('Panduan PWA Android:\n\n1. Buka menu titik tiga (⋮) di Chrome Android.\n2. Pilih "Install app" atau "Tambahkan ke Layar Utama".\n3. MultiPDF akan langsung terpasang seperti aplikasi Android native!');
       }
     }
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js').then((reg) => {
-          console.log('BastionPDF PWA Service Worker Registered', reg.scope);
+          console.log('MultiPDF PWA Service Worker Registered', reg.scope);
         }).catch((err) => {
           console.warn('SW registration notice:', err);
         });

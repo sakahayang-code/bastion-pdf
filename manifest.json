@@ -1,6 +1,6 @@
 {
-  "name": "BastionPDF - PDF Tools",
-  "short_name": "BastionPDF",
+  "name": "MultiPDF - PDF Tools",
+  "short_name": "MultiPDF",
   "description": "Sovereign Client-Side Document Workstation with zero-trace privacy.",
   "start_url": "./index.html",
   "scope": "./",

@@ -1,5 +1,5 @@
-// BastionPDF Android PWA Service Worker
-const CACHE_NAME = 'bastion-pdf-v1';
+// MultiPDF Android PWA Service Worker
+const CACHE_NAME = 'multipdf-v1';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -9,7 +9,8 @@ const ASSETS_TO_CACHE = [
   './js/pdf.min.js',
   './js/pdf.worker.min.js',
   './icons/icon-192.png',
-  './icons/icon-512.png'
+  './icons/icon-512.png',
+  './icons/icon-512-maskable.png'
 ];
 
 // Install Event

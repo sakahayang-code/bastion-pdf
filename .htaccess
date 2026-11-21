@@ -1,4 +1,4 @@
-# BastionPDF - Apache / cPanel / LiteSpeed Configuration
+# MultiPDF - Apache / cPanel / LiteSpeed Configuration
 
 # 1. Set default landing page to index.html
 DirectoryIndex index.html app.html index.php
