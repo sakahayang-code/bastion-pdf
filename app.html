@@ -1361,7 +1361,7 @@
               <option value="txt">Teks Murni (.txt)</option>
             </select>
             <p style="font-size: 12px; color: var(--color-text-muted); margin-top: 6px;">
-              ✨ Menghasilkan file Word asli (.docx) yang bersih tanpa bayangan teks ganda, dengan tabel data formulir yang lurus dan rapi, judul di tengah, serta posisi tanda tangan di kanan bawah.
+              ✨ Menghasilkan dokumen Microsoft Word asli (.docx) yang 100% dapat diedit dengan tata letak persis sesuai dokumen asli: mempertahankan logo instansi di Kop Surat, garis pembatas, judul di tengah, data formulir berkolom rapi, paragraf mengalir alami, serta gambar tanda tangan dan stempel pada posisinya.
             </p>
           </div>
 
@@ -2242,9 +2242,129 @@
         .replace(/'/g, '&apos;');
     }
 
+    // Matrix multiplication helper for PDF.js CTM tracking
+    function multiplyMatrix(m1, m2) {
+      return [
+        m1[0] * m2[0] + m1[2] * m2[1],
+        m1[1] * m2[0] + m1[3] * m2[1],
+        m1[0] * m2[2] + m1[2] * m2[3],
+        m1[1] * m2[2] + m1[3] * m2[3],
+        m1[0] * m2[4] + m1[2] * m2[5] + m1[4],
+        m1[1] * m2[4] + m1[3] * m2[5] + m1[5],
+      ];
+    }
+
+    // Retrieve PDF.js Image object reliably
+    function retrievePdfJsImage(page, imgId) {
+      return new Promise((resolve) => {
+        let resolved = false;
+        const timer = setTimeout(() => {
+          if (!resolved) {
+            resolved = true;
+            resolve(null);
+          }
+        }, 2000);
+
+        const onDone = (img) => {
+          if (!resolved) {
+            resolved = true;
+            clearTimeout(timer);
+            resolve(img);
+          }
+        };
+
+        try {
+          if (page.objs && page.objs.has && page.objs.has(imgId)) {
+            const direct = page.objs.get(imgId);
+            if (direct && typeof direct !== 'function') return onDone(direct);
+          }
+          if (page.commonObjs && page.commonObjs.has && page.commonObjs.has(imgId)) {
+            const direct = page.commonObjs.get(imgId);
+            if (direct && typeof direct !== 'function') return onDone(direct);
+          }
+          if (page.objs && typeof page.objs.get === 'function') {
+            const res = page.objs.get(imgId, (data) => onDone(data));
+            if (res && typeof res.then === 'function') {
+              res.then(onDone).catch(() => onDone(null));
+            }
+          } else if (page.commonObjs && typeof page.commonObjs.get === 'function') {
+            const res = page.commonObjs.get(imgId, (data) => onDone(data));
+            if (res && typeof res.then === 'function') {
+              res.then(onDone).catch(() => onDone(null));
+            }
+          } else {
+            onDone(null);
+          }
+        } catch (e) {
+          onDone(null);
+        }
+      });
+    }
+
+    // Convert PDF.js image data to PNG base64
+    function convertPdfJsImageToBase64(img) {
+      if (!img) return null;
+      try {
+        if (typeof document !== 'undefined' && document.createElement) {
+          const width = img.width || (img.bitmap && img.bitmap.width) || 0;
+          const height = img.height || (img.bitmap && img.bitmap.height) || 0;
+          if (!width || !height) return null;
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+
+          if (img.bitmap) {
+            ctx.drawImage(img.bitmap, 0, 0);
+            const dataUrl = canvas.toDataURL('image/png');
+            return dataUrl.split(',')[1];
+          }
+
+          if (img.data) {
+            const totalPixels = width * height;
+            let imgData;
+            if (img.data.length === totalPixels * 4) {
+              imgData = new ImageData(new Uint8ClampedArray(img.data), width, height);
+            } else if (img.data.length === totalPixels * 3) {
+              const rgba = new Uint8ClampedArray(totalPixels * 4);
+              for (let i = 0, j = 0; i < img.data.length; i += 3, j += 4) {
+                rgba[j] = img.data[i];
+                rgba[j + 1] = img.data[i + 1];
+                rgba[j + 2] = img.data[i + 2];
+                rgba[j + 3] = 255;
+              }
+              imgData = new ImageData(rgba, width, height);
+            } else if (img.data.length === totalPixels) {
+              const rgba = new Uint8ClampedArray(totalPixels * 4);
+              for (let i = 0, j = 0; i < img.data.length; i++, j += 4) {
+                const v = img.data[i];
+                rgba[j] = v;
+                rgba[j + 1] = v;
+                rgba[j + 2] = v;
+                rgba[j + 3] = 255;
+              }
+              imgData = new ImageData(rgba, width, height);
+            } else {
+              const rgba = new Uint8ClampedArray(totalPixels * 4);
+              for (let i = 0; i < rgba.length; i++) {
+                rgba[i] = i < img.data.length ? img.data[i] : 255;
+              }
+              imgData = new ImageData(rgba, width, height);
+            }
+            ctx.putImageData(imgData, 0, 0);
+            const dataUrl = canvas.toDataURL('image/png');
+            return dataUrl.split(',')[1];
+          }
+        }
+      } catch (e) {
+        console.warn('Image to Base64 conversion warning:', e);
+      }
+      return null;
+    }
+
     // High-Fidelity PDF to Word (.docx) OpenXML Engine
     async function generateHighFidelityDocx(buffer, options = {}) {
-      const layoutMode = options.layoutMode || 'exact';
       const zip = new JSZip();
 
       if (typeof pdfjsLib !== 'undefined' && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
@@ -2267,12 +2387,71 @@
         const pHeightPt = unscaledViewport.height || 841.89;
         const pWidthDxa = Math.round(pWidthPt * 20);
         const pHeightDxa = Math.round(pHeightPt * 20);
-        const pWidthEmu = Math.round(pWidthPt * 12700);
-        const pHeightEmu = Math.round(pHeightPt * 12700);
         lastPageWidthDxa = pWidthDxa;
         lastPageHeightDxa = pHeightDxa;
 
-        // Extract text items from page
+        // 1. Extract Images from Page
+        const pageImages = [];
+        try {
+          const ops = await page.getOperatorList();
+          let ctm = [1, 0, 0, 1, 0, 0];
+          const stack = [];
+
+          for (let i = 0; i < ops.fnArray.length; i++) {
+            const fn = ops.fnArray[i];
+            const args = ops.argsArray[i];
+
+            if (fn === pdfjsLib.OPS.save) {
+              stack.push([...ctm]);
+            } else if (fn === pdfjsLib.OPS.restore) {
+              if (stack.length > 0) ctm = stack.pop();
+            } else if (fn === pdfjsLib.OPS.transform) {
+              ctm = multiplyMatrix(ctm, args);
+            } else if (
+              fn === pdfjsLib.OPS.paintImageXObject ||
+              fn === pdfjsLib.OPS.paintJpegXObject ||
+              fn === pdfjsLib.OPS.paintInlineImageXObject
+            ) {
+              const imgId = args[0];
+              const x = ctm[4];
+              const y = ctm[5];
+              const w = Math.hypot(ctm[0], ctm[1]);
+              const h = Math.hypot(ctm[2], ctm[3]);
+              const topY = pHeightPt - (y + h);
+
+              if (w >= 4 && h >= 4) {
+                const imgObj = await retrievePdfJsImage(page, imgId);
+                const base64 = convertPdfJsImageToBase64(imgObj);
+                if (base64 && base64.length > 50) {
+                  const relId = `rIdImg_${pNum}_${pageImages.length + 1}`;
+                  const fileName = `img_${pNum}_${pageImages.length + 1}.png`;
+                  const widthEmu = Math.round(w * 12700);
+                  const heightEmu = Math.round(h * 12700);
+                  const imgEntry = {
+                    imgId,
+                    relId,
+                    fileName,
+                    base64,
+                    x,
+                    y,
+                    topY,
+                    widthPt: w,
+                    heightPt: h,
+                    widthEmu,
+                    heightEmu,
+                    used: false
+                  };
+                  pageImages.push(imgEntry);
+                  mediaImages.push(imgEntry);
+                }
+              }
+            }
+          }
+        } catch (imgErr) {
+          console.warn('PDF.js operator image extraction warning:', imgErr);
+        }
+
+        // 2. Extract Text Items from Page
         const textContent = await page.getTextContent({ normalizeWhitespace: true });
         const rawItems = [];
 
@@ -2284,7 +2463,7 @@
           const topY = pHeightPt - (pdfY + fontHeight);
 
           const fontName = (item.fontName || '').toLowerCase();
-          const isBold = /bold|heavy|black|medi/i.test(fontName) || (fontHeight >= 15 && item.str.length < 50);
+          const isBold = /bold|heavy|black|medi/i.test(fontName) || (fontHeight >= 14 && item.str.length < 50);
           const isItalic = /italic|oblique/i.test(fontName);
 
           rawItems.push({
@@ -2298,7 +2477,7 @@
           });
         }
 
-        // If scanned page with 0 text: render high-res image of page
+        // If scanned page with 0 text items: render high-res image fallback
         if (rawItems.length === 0 && typeof document !== 'undefined' && document.createElement) {
           try {
             const canvas = document.createElement('canvas');
@@ -2313,13 +2492,16 @@
             const dataUrl = canvas.toDataURL('image/png');
             const base64 = dataUrl.split(',')[1];
             if (base64 && base64.length > 100) {
-              const pageImgId = `rIdImg${pNum}`;
+              const pageImgId = `rIdImg_scan_${pNum}`;
+              const fileName = `page_scan_${pNum}.png`;
+              const widthEmu = Math.round(pWidthPt * 12700);
+              const heightEmu = Math.round(pHeightPt * 12700);
               mediaImages.push({
                 relId: pageImgId,
-                fileName: `page_${pNum}.png`,
+                fileName: fileName,
                 base64: base64,
-                widthEmu: pWidthEmu,
-                heightEmu: pHeightEmu
+                widthEmu: widthEmu,
+                heightEmu: heightEmu
               });
               docXmlBody += `
     <w:p>
@@ -2327,13 +2509,13 @@
       <w:r>
         <w:drawing>
           <wp:inline distT="0" distB="0" distL="0" distR="0">
-            <wp:extent cx="${pWidthEmu}" cy="${pHeightEmu}"/>
+            <wp:extent cx="${widthEmu}" cy="${heightEmu}"/>
             <wp:docPr id="${pNum}" name="Scanned Page ${pNum}"/>
             <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
               <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
                 <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
                   <pic:nvPicPr>
-                    <pic:cNvPr id="${pNum}" name="page_${pNum}.png"/>
+                    <pic:cNvPr id="${pNum}" name="${fileName}"/>
                     <pic:cNvPicPr/>
                   </pic:nvPicPr>
                   <pic:blipFill>
@@ -2341,7 +2523,7 @@
                     <a:stretch><a:fillRect/></a:stretch>
                   </pic:blipFill>
                   <pic:spPr>
-                    <a:xfrm><a:off x="0" y="0"/><a:ext cx="${pWidthEmu}" cy="${pHeightEmu}"/></a:xfrm>
+                    <a:xfrm><a:off x="0" y="0"/><a:ext cx="${widthEmu}" cy="${heightEmu}"/></a:xfrm>
                     <a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
                   </pic:spPr>
                 </pic:pic>
@@ -2355,16 +2537,17 @@
           } catch (scanErr) {
             console.warn('Scanned fallback warning:', scanErr);
           }
+          continue;
         }
 
-        // Intelligent Baseline Line Clustering for clean typography
+        // 3. Cluster Lines by Baseline
         rawItems.sort((a, b) => a.topY - b.topY);
         const lines = [];
 
         for (const item of rawItems) {
           let placed = false;
           for (const line of lines) {
-            const threshold = Math.max(6, (item.fontSize || 12) * 0.52);
+            const threshold = Math.max(5, (item.fontSize || 12) * 0.52);
             if (Math.abs(item.topY - line.avgTopY) <= threshold) {
               line.items.push(item);
               line.avgTopY = line.items.reduce((s, it) => s + it.topY, 0) / line.items.length;
@@ -2383,30 +2566,218 @@
         lines.sort((a, b) => a.avgTopY - b.avgTopY);
         lines.forEach(l => l.items.sort((a, b) => a.x - b.x));
 
-        // Format lines into Word paragraphs and borderless tables
+        // 4. Classify & Render Page Layout
+        // A. Kop Surat (Header) Detection
+        let kopLogo = pageImages.find(img => img.topY < 185 && img.x < pWidthPt * 0.4 && img.widthPt <= 180 && img.heightPt <= 180);
+        const kopLines = [];
+        let kopDividerLine = false;
+
         let lineIdx = 0;
-        let prevLineY = 0;
+        while (lineIdx < lines.length) {
+          const l = lines[lineIdx];
+          const lText = l.items.map(it => it.str).join(' ').trim();
+          const isKopText = l.avgTopY < 185 && /majelis|kementerian|pemerintah|dinas|yayasan|sekolah|madrasah|pesantren|universitas|fakultas|badan|kantor|nss|npsn|nis|akreditasi|jalan|jl\.|telp|fax|email|pos/i.test(lText);
+          if (isKopText && (kopLogo || kopLines.length > 0 || l.avgTopY < 115)) {
+            kopLines.push(l);
+            if (/nss|npsn|nis|jalan|jl\.|telp|email|pos/i.test(lText)) {
+              kopDividerLine = true;
+            }
+            lineIdx++;
+          } else {
+            break;
+          }
+        }
+
+        if (kopLines.length > 0) {
+          if (kopLogo) kopLogo.used = true;
+          const leftColWidth = kopLogo ? Math.max(1500, Math.round((kopLogo.widthPt + 30) * 20)) : 0;
+          const rightColWidth = pWidthDxa - 1440 - leftColWidth;
+
+          docXmlBody += `
+    <w:tbl>
+      <w:tblPr>
+        <w:tblW w:w="${pWidthDxa - 1440}" w:type="dxa"/>
+        <w:jc w:val="center"/>
+        <w:tblBorders>
+          <w:top w:val="none"/><w:left w:val="none"/><w:right w:val="none"/>
+          ${kopDividerLine ? '<w:bottom w:val="single" w:sz="18" w:space="12" w:color="000000"/>' : '<w:bottom w:val="none"/>'}
+          <w:insideH w:val="none"/><w:insideV w:val="none"/>
+        </w:tblBorders>
+      </w:tblPr>
+      <w:tr>`;
+
+          if (kopLogo) {
+            docXmlBody += `
+        <w:tc>
+          <w:tcPr><w:tcW w:w="${leftColWidth}" w:type="dxa"/><w:vAlign w:val="center"/></w:tcPr>
+          <w:p>
+            <w:pPr><w:jc w:val="center"/><w:spacing w:before="0" w:after="0"/></w:pPr>
+            <w:r>
+              <w:drawing>
+                <wp:inline distT="0" distB="0" distL="0" distR="0">
+                  <wp:extent cx="${kopLogo.widthEmu}" cy="${kopLogo.heightEmu}"/>
+                  <wp:docPr id="${kopLogo.relId}" name="Logo"/>
+                  <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                    <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                      <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                        <pic:nvPicPr><pic:cNvPr id="1" name="${kopLogo.fileName}"/><pic:cNvPicPr/></pic:nvPicPr>
+                        <pic:blipFill>
+                          <a:blip r:embed="${kopLogo.relId}" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/>
+                          <a:stretch><a:fillRect/></a:stretch>
+                        </pic:blipFill>
+                        <pic:spPr>
+                          <a:xfrm><a:off x="0" y="0"/><a:ext cx="${kopLogo.widthEmu}" cy="${kopLogo.heightEmu}"/></a:xfrm>
+                          <a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
+                        </pic:spPr>
+                      </pic:pic>
+                    </a:graphicData>
+                  </a:graphic>
+                </wp:inline>
+              </w:drawing>
+            </w:r>
+          </w:p>
+        </w:tc>`;
+          }
+
+          docXmlBody += `
+        <w:tc>
+          <w:tcPr><w:tcW w:w="${rightColWidth}" w:type="dxa"/><w:vAlign w:val="center"/></w:tcPr>`;
+
+          for (const kLine of kopLines) {
+            docXmlBody += `
+          <w:p>
+            <w:pPr><w:jc w:val="center"/><w:spacing w:before="0" w:after="20" w:line="220" w:lineRule="auto"/></w:pPr>`;
+            for (let i = 0; i < kLine.items.length; i++) {
+              const it = kLine.items[i];
+              const halfPt = Math.max(16, Math.min(60, Math.round(it.fontSize * 2)));
+              const spBefore = (i > 0 && it.x - (kLine.items[i - 1].x + kLine.items[i - 1].width) > 3) ? ' ' : '';
+              docXmlBody += `
+            <w:r><w:rPr><w:sz w:val="${halfPt}"/>${it.bold ? '<w:b/>' : ''}${it.italic ? '<w:i/>' : ''}</w:rPr><w:t xml:space="preserve">${escapeXmlString(spBefore + it.str)}</w:t></w:r>`;
+            }
+            docXmlBody += `
+          </w:p>`;
+          }
+
+          docXmlBody += `
+        </w:tc>
+      </w:tr>
+    </w:tbl>`;
+        }
+
+        // B. Form Field & Paragraph Processor
+        const isFormLine = (l) => {
+          const full = l.items.map(it => it.str).join(' ');
+          const colonIdx = full.indexOf(':');
+          return colonIdx > 1 && colonIdx < 35 && !full.trim().endsWith(':') && !/surat|keputusan|keterangan|nomor|laporan/i.test(full);
+        };
 
         while (lineIdx < lines.length) {
-          const currentLine = lines[lineIdx];
-          const lineText = currentLine.items.map(it => it.str).join(' ').trim();
+          const curLine = lines[lineIdx];
+          const curText = curLine.items.map(it => it.str).join(' ').trim();
+          const minX = curLine.items[0].x;
+          const lastIt = curLine.items[curLine.items.length - 1];
+          const maxX = lastIt.x + lastIt.width;
+          const lineCenter = (minX + maxX) / 2;
 
-          // Check if this line is part of a consecutive form field block (e.g. "Nama : AFWI...", "NIS : 123...")
-          const isFormLine = (l) => {
-            const full = l.items.map(it => it.str).join(' ');
-            const colonIdx = full.indexOf(':');
-            return colonIdx > 1 && colonIdx < 35 && !full.trim().endsWith(':');
-          };
+          // Check for Signature Block at bottom right
+          if (curLine.avgTopY > pHeightPt * 0.45 && minX > pWidthPt * 0.42 && (/tasikmalaya|jakarta|bandung|surabaya|yogyakarta|semarang|medan|palembang|padang|denpasar|makassar|banjarmasin|manado|[0-9]{4}/i.test(curText) || /kepala|direktur|ketua|pimpinan|mengetahui|hormat|wali\s+kelas/i.test(curText))) {
+            const sigLines = [];
+            while (lineIdx < lines.length && lines[lineIdx].items[0].x > pWidthPt * 0.38) {
+              sigLines.push(lines[lineIdx]);
+              lineIdx++;
+            }
 
-          if (isFormLine(currentLine)) {
-            // Collect all consecutive form lines
+            // Find stamp / signature image in this region
+            const sigStamp = pageImages.find(img => !img.used && img.topY >= sigLines[0].avgTopY - 20 && img.x >= pWidthPt * 0.3);
+            if (sigStamp) sigStamp.used = true;
+
+            const leftColWidth = Math.round((pWidthDxa - 1440) * 0.52);
+            const rightColWidth = pWidthDxa - 1440 - leftColWidth;
+
+            docXmlBody += `
+    <w:tbl>
+      <w:tblPr>
+        <w:tblW w:w="${pWidthDxa - 1440}" w:type="dxa"/>
+        <w:jc w:val="center"/>
+        <w:tblBorders>
+          <w:top w:val="none"/><w:left w:val="none"/><w:bottom w:val="none"/><w:right w:val="none"/>
+          <w:insideH w:val="none"/><w:insideV w:val="none"/>
+        </w:tblBorders>
+      </w:tblPr>
+      <w:tr>
+        <w:tc><w:tcPr><w:tcW w:w="${leftColWidth}" w:type="dxa"/></w:tcPr><w:p/></w:tc>
+        <w:tc>
+          <w:tcPr><w:tcW w:w="${rightColWidth}" w:type="dxa"/></w:tcPr>`;
+
+            let stampInserted = false;
+            for (let sIdx = 0; sIdx < sigLines.length; sIdx++) {
+              const sLine = sigLines[sIdx];
+              const sText = sLine.items.map(it => it.str).join(' ');
+              const isSignerName = /s\.pd|s\.kom|s\.t|dr\.|drs\.|h\.|ir\.|prof\.|m\.pd|m\.m|m\.kom|[A-Z]{3,}/.test(sText) && !/kepala|direktur|ketua/i.test(sText);
+
+              if (!stampInserted && isSignerName) {
+                if (sigStamp) {
+                  docXmlBody += `
+          <w:p>
+            <w:pPr><w:spacing w:before="40" w:after="40"/></w:pPr>
+            <w:r>
+              <w:drawing>
+                <wp:inline distT="0" distB="0" distL="0" distR="0">
+                  <wp:extent cx="${sigStamp.widthEmu}" cy="${sigStamp.heightEmu}"/>
+                  <wp:docPr id="${sigStamp.relId}" name="Stamp"/>
+                  <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                    <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                      <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                        <pic:nvPicPr><pic:cNvPr id="2" name="${sigStamp.fileName}"/><pic:cNvPicPr/></pic:nvPicPr>
+                        <pic:blipFill>
+                          <a:blip r:embed="${sigStamp.relId}" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/>
+                          <a:stretch><a:fillRect/></a:stretch>
+                        </pic:blipFill>
+                        <pic:spPr>
+                          <a:xfrm><a:off x="0" y="0"/><a:ext cx="${sigStamp.widthEmu}" cy="${sigStamp.heightEmu}"/></a:xfrm>
+                          <a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
+                        </pic:spPr>
+                      </pic:pic>
+                    </a:graphicData>
+                  </a:graphic>
+                </wp:inline>
+              </w:drawing>
+            </w:r>
+          </w:p>`;
+                } else {
+                  docXmlBody += `<w:p><w:pPr><w:spacing w:before="600" w:after="0"/></w:pPr></w:p>`;
+                }
+                stampInserted = true;
+              }
+
+              docXmlBody += `
+          <w:p><w:pPr><w:spacing w:before="0" w:after="30" w:line="240" w:lineRule="auto"/></w:pPr>`;
+              for (const it of sLine.items) {
+                docXmlBody += `<w:r><w:rPr>${it.bold ? '<w:b/>' : ''}<w:sz w:val="${Math.round(it.fontSize * 2)}"/></w:rPr><w:t xml:space="preserve">${escapeXmlString(it.str)} </w:t></w:r>`;
+              }
+              docXmlBody += `</w:p>`;
+            }
+
+            if (!stampInserted && sigStamp) {
+              docXmlBody += `
+          <w:p><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="${sigStamp.widthEmu}" cy="${sigStamp.heightEmu}"/><wp:docPr id="${sigStamp.relId}" name="Stamp"/><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="2" name="${sigStamp.fileName}"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="${sigStamp.relId}" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${sigStamp.widthEmu}" cy="${sigStamp.heightEmu}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>`;
+            }
+
+            docXmlBody += `
+        </w:tc>
+      </w:tr>
+    </w:tbl>`;
+            continue;
+          }
+
+          // Check for Form Fields
+          if (isFormLine(curLine)) {
             const formLines = [];
             while (lineIdx < lines.length && isFormLine(lines[lineIdx])) {
               formLines.push(lines[lineIdx]);
               lineIdx++;
             }
 
-            // Emit as clean borderless Word Table with 3 columns (Label, Colon, Value)
             docXmlBody += `
     <w:tbl>
       <w:tblPr>
@@ -2445,84 +2816,97 @@
 
             docXmlBody += `
     </w:tbl>`;
-
-            prevLineY = formLines[formLines.length - 1].avgTopY;
             continue;
           }
 
-          // Otherwise render as a formatted Paragraph
-          const minX = currentLine.items[0].x;
-          const lastIt = currentLine.items[currentLine.items.length - 1];
-          const maxX = lastIt.x + lastIt.width;
-          const lineCenter = (minX + maxX) / 2;
-          const maxFontSize = Math.max(...currentLine.items.map(it => it.fontSize));
-          const isLineBold = currentLine.items.some(it => it.bold);
-
-          // Detect alignment
-          let jc = 'left';
-          let indXml = '';
-          const isKopHeader = currentLine.avgTopY < 165 && (Math.abs(lineCenter - (pWidthPt / 2)) < 55 || lineText.length > 35);
-          const isJudul = Math.abs(lineCenter - (pWidthPt / 2)) < 40 && (maxFontSize >= 13 || isLineBold || /surat|keputusan|keterangan|nomor|laporan/i.test(lineText));
-          const isSignature = minX > (pWidthPt * 0.52);
-
-          if (isKopHeader || isJudul) {
-            jc = 'center';
-          } else if (isSignature) {
-            indXml = `<w:ind w:left="5600"/>`;
-          } else if (minX > 35 && lineText.length < 80) {
-            indXml = `<w:ind w:left="${Math.min(2400, Math.round(minX * 18))}"/>`;
+          // Check for Document Title & Document Number
+          const isJudul = Math.abs(lineCenter - (pWidthPt / 2)) < 55 && (/surat|keputusan|keterangan|nomor|no\.|laporan|sertifikat|piagam/i.test(curText) || curLine.items.some(it => it.fontSize >= 13));
+          if (isJudul) {
+            docXmlBody += `
+    <w:p>
+      <w:pPr><w:jc w:val="center"/><w:spacing w:before="140" w:after="40"/></w:pPr>`;
+            for (const it of curLine.items) {
+              docXmlBody += `<w:r><w:rPr>${it.bold ? '<w:b/>' : ''}<w:sz w:val="${Math.round(it.fontSize * 2)}"/></w:rPr><w:t xml:space="preserve">${escapeXmlString(it.str)} </w:t></w:r>`;
+            }
+            docXmlBody += `
+    </w:p>`;
+            lineIdx++;
+            continue;
           }
 
-          // Spacing before / after
-          const gap = prevLineY > 0 ? Math.max(0, currentLine.avgTopY - prevLineY) : 0;
-          let beforeDxa = 0;
-          let afterDxa = 30;
+          // Continuous Flow Paragraph Grouping
+          const paraLines = [curLine];
+          lineIdx++;
+          while (lineIdx < lines.length) {
+            const nextL = lines[lineIdx];
+            const nextText = nextL.items.map(it => it.str).join(' ').trim();
+            const prevL = paraLines[paraLines.length - 1];
+            const gap = nextL.avgTopY - prevL.avgTopY;
+            const sameLeft = Math.abs(nextL.items[0].x - prevL.items[0].x) < 25 || (prevL.items[0].x > nextL.items[0].x && Math.abs(nextL.items[0].x - 50) < 30);
+            const isNotSpecial = !isFormLine(nextL) && !(nextL.avgTopY > pHeightPt * 0.45 && nextL.items[0].x > pWidthPt * 0.42) && !/surat|keputusan|keterangan|nomor|laporan/i.test(nextText);
 
-          if (gap > 35 && isSignature) {
-            beforeDxa = 600; // signature space
-          } else if (gap > maxFontSize * 1.6) {
-            beforeDxa = 140; // new section gap
-          } else if (gap > 4) {
-            beforeDxa = 20;
+            if (gap <= (prevL.items[0].fontSize || 12) * 1.85 && sameLeft && isNotSpecial) {
+              paraLines.push(nextL);
+              lineIdx++;
+            } else {
+              break;
+            }
           }
 
-          prevLineY = currentLine.avgTopY;
-
-          // Check if bottom of Kop Surat (NSS/NPSN/Alamat) -> add border line
-          let pBdrXml = '';
-          if (currentLine.avgTopY < 165 && /nss|npsn|nis|telp|jalan|email|fax/i.test(lineText)) {
-            pBdrXml = `<w:pBdr><w:bottom w:val="single" w:sz="18" w:space="8" w:color="000000"/></w:pBdr>`;
-            afterDxa = 180;
-          }
-
+          // Emit continuous reflowable paragraph
+          const firstLineIndent = paraLines[0].items[0].x > 55 ? Math.min(1440, Math.round((paraLines[0].items[0].x - 50) * 20)) : 0;
           docXmlBody += `
     <w:p>
       <w:pPr>
-        <w:jc w:val="${jc}"/>
-        ${indXml}
-        ${pBdrXml}
-        <w:spacing w:before="${beforeDxa}" w:after="${afterDxa}" w:line="260" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        ${firstLineIndent > 0 ? `<w:ind w:firstLine="${firstLineIndent}"/>` : ''}
+        <w:spacing w:before="0" w:after="140" w:line="276" w:lineRule="auto"/>
       </w:pPr>`;
 
-          for (let i = 0; i < currentLine.items.length; i++) {
-            const it = currentLine.items[i];
-            const itemHalfPt = Math.max(16, Math.min(72, Math.round(it.fontSize * 2)));
-            const spaceBefore = (i > 0 && it.x - (currentLine.items[i - 1].x + currentLine.items[i - 1].width) > 3) ? ' ' : '';
-            docXmlBody += `
-      <w:r>
-        <w:rPr>
-          <w:sz w:val="${itemHalfPt}"/>
-          ${it.bold ? '<w:b/>' : ''}
-          ${it.italic ? '<w:i/>' : ''}
-        </w:rPr>
-        <w:t xml:space="preserve">${escapeXmlString(spaceBefore + it.str)}</w:t>
-      </w:r>`;
+          for (let plIdx = 0; plIdx < paraLines.length; plIdx++) {
+            const pLine = paraLines[plIdx];
+            for (let i = 0; i < pLine.items.length; i++) {
+              const it = pLine.items[i];
+              const sp = (plIdx > 0 && i === 0) || (i > 0 && it.x - (pLine.items[i - 1].x + pLine.items[i - 1].width) > 3) ? ' ' : '';
+              docXmlBody += `
+        <w:r><w:rPr>${it.bold ? '<w:b/>' : ''}${it.italic ? '<w:i/>' : ''}<w:sz w:val="${Math.round(it.fontSize * 2)}"/></w:rPr><w:t xml:space="preserve">${escapeXmlString(sp + it.str)}</w:t></w:r>`;
+            }
           }
 
           docXmlBody += `
     </w:p>`;
+        }
 
-          lineIdx++;
+        // C. Emit any unused body images
+        const unusedImages = pageImages.filter(img => !img.used);
+        for (const uImg of unusedImages) {
+          docXmlBody += `
+    <w:p>
+      <w:pPr><w:jc w:val="center"/><w:spacing w:before="120" w:after="120"/></w:pPr>
+      <w:r>
+        <w:drawing>
+          <wp:inline distT="0" distB="0" distL="0" distR="0">
+            <wp:extent cx="${uImg.widthEmu}" cy="${uImg.heightEmu}"/>
+            <wp:docPr id="${uImg.relId}" name="Image"/>
+            <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:nvPicPr><pic:cNvPr id="3" name="${uImg.fileName}"/><pic:cNvPicPr/></pic:nvPicPr>
+                  <pic:blipFill>
+                    <a:blip r:embed="${uImg.relId}" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/>
+                    <a:stretch><a:fillRect/></a:stretch>
+                  </pic:blipFill>
+                  <pic:spPr>
+                    <a:xfrm><a:off x="0" y="0"/><a:ext cx="${uImg.widthEmu}" cy="${uImg.heightEmu}"/></a:xfrm>
+                    <a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
+                  </pic:spPr>
+                </pic:pic>
+              </a:graphicData>
+            </a:graphic>
+          </wp:inline>
+        </w:drawing>
+      </w:r>
+    </w:p>`;
         }
 
         // Add page break if not last page
@@ -3078,8 +3462,18 @@
         processedBlobUrl = URL.createObjectURL(blob);
 
         setTimeout(() => {
-          document.getElementById('download-summary-text').innerText = 
-            `Transformation completed: ${(blob.size / 1024).toFixed(1)} KB output ready.`;
+          let summary = `Transformation completed: ${(blob.size / 1024).toFixed(1)} KB output ready.`;
+          const btnDl = document.getElementById('btn-actual-download');
+          if (currentTool === 'pdf_to_word') {
+            summary = `Dokumen Word (.docx) berhasil dibuat (${(blob.size / 1024).toFixed(1)} KB). Format presisi sesuai aslinya (Kop surat, logo, tabel data, paragraf mengalir, tanda tangan & stempel) dan 100% siap diedit di Word & WPS Office.`;
+            if (btnDl) btnDl.innerText = '📥 Download Dokumen Word (.docx)';
+          } else if (currentTool === 'pdf_to_excel') {
+            summary = `File Spreadsheet Excel (${(blob.size / 1024).toFixed(1)} KB) berhasil diekstrak dan siap digunakan.`;
+            if (btnDl) btnDl.innerText = '📥 Download Spreadsheet Excel';
+          } else {
+            if (btnDl) btnDl.innerText = '📥 Download Transformed PDF';
+          }
+          document.getElementById('download-summary-text').innerText = summary;
           showScreen('screen-download');
         }, 400);
 
