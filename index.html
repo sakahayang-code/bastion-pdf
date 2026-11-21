@@ -1356,12 +1356,12 @@
           <div id="config-word-opts" class="config-row" style="display: none;">
             <span class="config-label">Format Dokumen Word</span>
             <select id="word-format-type" class="input-field">
-              <option value="docx" selected>Microsoft Word (.docx) - Format Rapi &amp; Presisi</option>
+              <option value="docx" selected>Microsoft Word (.docx) - Presisi Universal Sesuai Aslinya</option>
               <option value="rtf">Rich Text Format (.rtf)</option>
               <option value="txt">Teks Murni (.txt)</option>
             </select>
             <p style="font-size: 12px; color: var(--color-text-muted); margin-top: 6px;">
-              ✨ Menghasilkan dokumen Microsoft Word asli (.docx) yang 100% dapat diedit dengan tata letak persis sesuai dokumen asli: mempertahankan logo instansi di Kop Surat, garis pembatas, judul di tengah, data formulir berkolom rapi, paragraf mengalir alami, serta gambar tanda tangan dan stempel pada posisinya.
+              ✨ Mesin konversi cerdas universal: mendeteksi otomatis tabel berkolom (invoice, kwitansi, rekap data), formulir biodata, Kop Surat beserta logo, orientasi landscape/portrait, paragraf mengalir alami, serta tanda tangan &amp; stempel persis sesuai tata letak dokumen aslinya.
             </p>
           </div>
 
@@ -2566,8 +2566,10 @@
         lines.sort((a, b) => a.avgTopY - b.avgTopY);
         lines.forEach(l => l.items.sort((a, b) => a.x - b.x));
 
-        // 4. Classify & Render Page Layout
-        // A. Kop Surat (Header) Detection
+        // 4. Universal Layout Synthesis
+        const isLandscape = pWidthPt > pHeightPt;
+
+        // Check if page has Kop Surat (Logo on left + header lines)
         let kopLogo = pageImages.find(img => img.topY < 185 && img.x < pWidthPt * 0.4 && img.widthPt <= 180 && img.heightPt <= 180);
         const kopLines = [];
         let kopDividerLine = false;
@@ -2576,10 +2578,10 @@
         while (lineIdx < lines.length) {
           const l = lines[lineIdx];
           const lText = l.items.map(it => it.str).join(' ').trim();
-          const isKopText = l.avgTopY < 185 && /majelis|kementerian|pemerintah|dinas|yayasan|sekolah|madrasah|pesantren|universitas|fakultas|badan|kantor|nss|npsn|nis|akreditasi|jalan|jl\.|telp|fax|email|pos/i.test(lText);
-          if (isKopText && (kopLogo || kopLines.length > 0 || l.avgTopY < 115)) {
+          const isKopText = l.avgTopY < 185 && (kopLogo ? (l.items[0].x > kopLogo.x + kopLogo.widthPt - 10) : (l.avgTopY < 115 || /kementerian|pemerintah|dinas|yayasan|sekolah|pesantren|universitas|badan|kantor|nss|npsn|nis|jalan|jl\.|telp|email/i.test(lText)));
+          if (isKopText && (kopLogo || kopLines.length > 0 || l.avgTopY < 100)) {
             kopLines.push(l);
-            if (/nss|npsn|nis|jalan|jl\.|telp|email|pos/i.test(lText)) {
+            if (/nss|npsn|nis|jalan|jl\.|telp|email|fax/i.test(lText)) {
               kopDividerLine = true;
             }
             lineIdx++;
@@ -2664,11 +2666,26 @@
     </w:tbl>`;
         }
 
-        // B. Form Field & Paragraph Processor
+        // Helper: Check if two consecutive lines share column structure
+        const areLinesInSameTable = (l1, l2) => {
+          if (!l1 || !l2 || l1.items.length < 2 || l2.items.length < 2) return false;
+          let matches = 0;
+          for (const it1 of l1.items) {
+            for (const it2 of l2.items) {
+              if (Math.abs(it1.x - it2.x) <= 25) {
+                matches++;
+                break;
+              }
+            }
+          }
+          return matches >= 2;
+        };
+
+        // Helper: Check if line is a Form Field (Label : Value)
         const isFormLine = (l) => {
           const full = l.items.map(it => it.str).join(' ');
           const colonIdx = full.indexOf(':');
-          return colonIdx > 1 && colonIdx < 35 && !full.trim().endsWith(':') && !/surat|keputusan|keterangan|nomor|laporan/i.test(full);
+          return colonIdx > 1 && colonIdx < 35 && !full.trim().endsWith(':') && !/surat|keputusan|keterangan|nomor|laporan|invoice/i.test(full);
         };
 
         while (lineIdx < lines.length) {
@@ -2679,15 +2696,194 @@
           const maxX = lastIt.x + lastIt.width;
           const lineCenter = (minX + maxX) / 2;
 
-          // Check for Signature Block at bottom right
-          if (curLine.avgTopY > pHeightPt * 0.45 && minX > pWidthPt * 0.42 && (/tasikmalaya|jakarta|bandung|surabaya|yogyakarta|semarang|medan|palembang|padang|denpasar|makassar|banjarmasin|manado|[0-9]{4}/i.test(curText) || /kepala|direktur|ketua|pimpinan|mengetahui|hormat|wali\s+kelas/i.test(curText))) {
+          // A. Multi-Column Table Block Detection (Invoices, reports, data tables)
+          if (curLine.items.length >= 2 && lineIdx + 1 < lines.length && areLinesInSameTable(curLine, lines[lineIdx + 1])) {
+            const tableLines = [curLine];
+            lineIdx++;
+            while (lineIdx < lines.length && areLinesInSameTable(tableLines[tableLines.length - 1], lines[lineIdx])) {
+              tableLines.push(lines[lineIdx]);
+              lineIdx++;
+            }
+
+            // Calculate distinct column X coordinates
+            const colXSet = [];
+            for (const tLine of tableLines) {
+              for (const it of tLine.items) {
+                let matchCol = false;
+                for (let c = 0; c < colXSet.length; c++) {
+                  if (Math.abs(colXSet[c] - it.x) <= 22) {
+                    matchCol = true;
+                    break;
+                  }
+                }
+                if (!matchCol) colXSet.push(it.x);
+              }
+            }
+            colXSet.sort((a, b) => a - b);
+
+            const totalAvailDxa = pWidthDxa - 1440;
+            const colWidths = [];
+            for (let c = 0; c < colXSet.length; c++) {
+              if (c < colXSet.length - 1) {
+                colWidths.push(Math.round((colXSet[c + 1] - colXSet[c]) * 20));
+              } else {
+                const sumSoFar = colWidths.reduce((s, w) => s + w, 0);
+                colWidths.push(Math.max(1000, totalAvailDxa - sumSoFar));
+              }
+            }
+
+            docXmlBody += `
+    <w:tbl>
+      <w:tblPr>
+        <w:tblW w:w="${totalAvailDxa}" w:type="dxa"/>
+        <w:jc w:val="center"/>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="8" w:color="CBD5E1"/>
+          <w:bottom w:val="single" w:sz="8" w:color="CBD5E1"/>
+          <w:insideH w:val="single" w:sz="4" w:color="E2E8F0"/>
+          <w:insideV w:val="none"/>
+          <w:left w:val="none"/><w:right w:val="none"/>
+        </w:tblBorders>
+      </w:tblPr>`;
+
+            for (const tLine of tableLines) {
+              docXmlBody += `
+      <w:tr>`;
+              for (let c = 0; c < colXSet.length; c++) {
+                const minColX = colXSet[c] - 20;
+                const maxColX = (c < colXSet.length - 1) ? colXSet[c + 1] - 20 : pWidthPt;
+                const cellItems = tLine.items.filter(it => it.x >= minColX && it.x < maxColX);
+                const cellText = cellItems.map(it => it.str).join(' ');
+                const isCellBold = cellItems.some(it => it.bold);
+
+                docXmlBody += `
+        <w:tc>
+          <w:tcPr><w:tcW w:w="${colWidths[c]}" w:type="dxa"/></w:tcPr>
+          <w:p>
+            <w:pPr><w:spacing w:before="40" w:after="40" w:line="240" w:lineRule="auto"/></w:pPr>
+            <w:r><w:rPr>${isCellBold ? '<w:b/>' : ''}</w:rPr><w:t xml:space="preserve">${escapeXmlString(cellText)}</w:t></w:r>
+          </w:p>
+        </w:tc>`;
+              }
+              docXmlBody += `
+      </w:tr>`;
+            }
+
+            docXmlBody += `
+    </w:tbl>`;
+            continue;
+          }
+
+          // B. Form Fields (Label : Value)
+          if (isFormLine(curLine)) {
+            const formLines = [];
+            while (lineIdx < lines.length && isFormLine(lines[lineIdx])) {
+              formLines.push(lines[lineIdx]);
+              lineIdx++;
+            }
+
+            docXmlBody += `
+    <w:tbl>
+      <w:tblPr>
+        <w:tblW w:w="${pWidthDxa - 1440}" w:type="dxa"/>
+        <w:jc w:val="left"/>
+        <w:tblInd w:w="480" w:type="dxa"/>
+        <w:tblBorders>
+          <w:top w:val="none"/><w:left w:val="none"/><w:bottom w:val="none"/><w:right w:val="none"/>
+          <w:insideH w:val="none"/><w:insideV w:val="none"/>
+        </w:tblBorders>
+      </w:tblPr>`;
+
+            for (const fLine of formLines) {
+              const fullText = fLine.items.map(it => it.str).join(' ');
+              const colonPos = fullText.indexOf(':');
+              const labelText = fullText.substring(0, colonPos).trim();
+              const valText = fullText.substring(colonPos + 1).trim();
+              const isValBold = fLine.items.some(it => it.bold && fullText.indexOf(it.str) >= colonPos);
+
+              docXmlBody += `
+      <w:tr>
+        <w:tc>
+          <w:tcPr><w:tcW w:w="2600" w:type="dxa"/></w:tcPr>
+          <w:p><w:pPr><w:spacing w:before="30" w:after="30" w:line="240" w:lineRule="auto"/></w:pPr><w:r><w:t xml:space="preserve">${escapeXmlString(labelText)}</w:t></w:r></w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr><w:tcW w:w="300" w:type="dxa"/></w:tcPr>
+          <w:p><w:pPr><w:spacing w:before="30" w:after="30" w:line="240" w:lineRule="auto"/></w:pPr><w:r><w:t>:</w:t></w:r></w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr><w:tcW w:w="${pWidthDxa - 4340}" w:type="dxa"/></w:tcPr>
+          <w:p><w:pPr><w:spacing w:before="30" w:after="30" w:line="240" w:lineRule="auto"/></w:pPr><w:r><w:rPr>${isValBold ? '<w:b/>' : ''}</w:rPr><w:t xml:space="preserve">${escapeXmlString(valText)}</w:t></w:r></w:p>
+        </w:tc>
+      </w:tr>`;
+            }
+
+            docXmlBody += `
+    </w:tbl>`;
+            continue;
+          }
+
+          // C. Split Line (Items with large horizontal gap, e.g. "INVOICE" left, "Invoice #:..." right)
+          if (curLine.items.length >= 2) {
+            const firstIt = curLine.items[0];
+            const lastIt = curLine.items[curLine.items.length - 1];
+            if (lastIt.x - (firstIt.x + firstIt.width) > 110) {
+              const midX = pWidthPt / 2;
+              const leftItems = curLine.items.filter(it => it.x < midX);
+              const rightItems = curLine.items.filter(it => it.x >= midX);
+
+              if (leftItems.length > 0 && rightItems.length > 0) {
+                const totalAvailDxa = pWidthDxa - 1440;
+                const leftColDxa = Math.round(totalAvailDxa * 0.5);
+                const rightColDxa = totalAvailDxa - leftColDxa;
+
+                docXmlBody += `
+    <w:tbl>
+      <w:tblPr>
+        <w:tblW w:w="${totalAvailDxa}" w:type="dxa"/>
+        <w:jc w:val="center"/>
+        <w:tblBorders>
+          <w:top w:val="none"/><w:left w:val="none"/><w:bottom w:val="none"/><w:right w:val="none"/>
+          <w:insideH w:val="none"/><w:insideV w:val="none"/>
+        </w:tblBorders>
+      </w:tblPr>
+      <w:tr>
+        <w:tc>
+          <w:tcPr><w:tcW w:w="${leftColDxa}" w:type="dxa"/></w:tcPr>
+          <w:p>
+            <w:pPr><w:jc w:val="left"/><w:spacing w:before="20" w:after="30"/></w:pPr>`;
+                for (const it of leftItems) {
+                  docXmlBody += `<w:r><w:rPr>${it.bold ? '<w:b/>' : ''}<w:sz w:val="${Math.round(it.fontSize * 2)}"/></w:rPr><w:t xml:space="preserve">${escapeXmlString(it.str)} </w:t></w:r>`;
+                }
+                docXmlBody += `
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr><w:tcW w:w="${rightColDxa}" w:type="dxa"/></w:tcPr>
+          <w:p>
+            <w:pPr><w:jc w:val="right"/><w:spacing w:before="20" w:after="30"/></w:pPr>`;
+                for (const it of rightItems) {
+                  docXmlBody += `<w:r><w:rPr>${it.bold ? '<w:b/>' : ''}<w:sz w:val="${Math.round(it.fontSize * 2)}"/></w:rPr><w:t xml:space="preserve">${escapeXmlString(it.str)} </w:t></w:r>`;
+                }
+                docXmlBody += `
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>`;
+                lineIdx++;
+                continue;
+              }
+            }
+          }
+
+          // D. Signature Block at bottom right
+          if (curLine.avgTopY > pHeightPt * 0.45 && minX > pWidthPt * 0.42 && (/kepala|direktur|ketua|pimpinan|mengetahui|hormat|wali|manager|director|president|[0-9]{4}/i.test(curText))) {
             const sigLines = [];
             while (lineIdx < lines.length && lines[lineIdx].items[0].x > pWidthPt * 0.38) {
               sigLines.push(lines[lineIdx]);
               lineIdx++;
             }
 
-            // Find stamp / signature image in this region
             const sigStamp = pageImages.find(img => !img.used && img.topY >= sigLines[0].avgTopY - 20 && img.x >= pWidthPt * 0.3);
             if (sigStamp) sigStamp.used = true;
 
@@ -2770,57 +2966,8 @@
             continue;
           }
 
-          // Check for Form Fields
-          if (isFormLine(curLine)) {
-            const formLines = [];
-            while (lineIdx < lines.length && isFormLine(lines[lineIdx])) {
-              formLines.push(lines[lineIdx]);
-              lineIdx++;
-            }
-
-            docXmlBody += `
-    <w:tbl>
-      <w:tblPr>
-        <w:tblW w:w="${pWidthDxa - 1440}" w:type="dxa"/>
-        <w:jc w:val="left"/>
-        <w:tblInd w:w="480" w:type="dxa"/>
-        <w:tblBorders>
-          <w:top w:val="none"/><w:left w:val="none"/><w:bottom w:val="none"/><w:right w:val="none"/>
-          <w:insideH w:val="none"/><w:insideV w:val="none"/>
-        </w:tblBorders>
-      </w:tblPr>`;
-
-            for (const fLine of formLines) {
-              const fullText = fLine.items.map(it => it.str).join(' ');
-              const colonPos = fullText.indexOf(':');
-              const labelText = fullText.substring(0, colonPos).trim();
-              const valText = fullText.substring(colonPos + 1).trim();
-              const isValBold = fLine.items.some(it => it.bold && fullText.indexOf(it.str) >= colonPos);
-
-              docXmlBody += `
-      <w:tr>
-        <w:tc>
-          <w:tcPr><w:tcW w:w="2600" w:type="dxa"/></w:tcPr>
-          <w:p><w:pPr><w:spacing w:before="30" w:after="30" w:line="240" w:lineRule="auto"/></w:pPr><w:r><w:t xml:space="preserve">${escapeXmlString(labelText)}</w:t></w:r></w:p>
-        </w:tc>
-        <w:tc>
-          <w:tcPr><w:tcW w:w="300" w:type="dxa"/></w:tcPr>
-          <w:p><w:pPr><w:spacing w:before="30" w:after="30" w:line="240" w:lineRule="auto"/></w:pPr><w:r><w:t>:</w:t></w:r></w:p>
-        </w:tc>
-        <w:tc>
-          <w:tcPr><w:tcW w:w="${pWidthDxa - 4340}" w:type="dxa"/></w:tcPr>
-          <w:p><w:pPr><w:spacing w:before="30" w:after="30" w:line="240" w:lineRule="auto"/></w:pPr><w:r><w:rPr>${isValBold ? '<w:b/>' : ''}</w:rPr><w:t xml:space="preserve">${escapeXmlString(valText)}</w:t></w:r></w:p>
-        </w:tc>
-      </w:tr>`;
-            }
-
-            docXmlBody += `
-    </w:tbl>`;
-            continue;
-          }
-
-          // Check for Document Title & Document Number
-          const isJudul = Math.abs(lineCenter - (pWidthPt / 2)) < 55 && (/surat|keputusan|keterangan|nomor|no\.|laporan|sertifikat|piagam/i.test(curText) || curLine.items.some(it => it.fontSize >= 13));
+          // E. Title & Heading
+          const isJudul = Math.abs(lineCenter - (pWidthPt / 2)) < 55 && (/surat|keputusan|keterangan|nomor|no\.|laporan|sertifikat|certificate|invoice|tagihan/i.test(curText) || curLine.items.some(it => it.fontSize >= 13));
           if (isJudul) {
             docXmlBody += `
     <w:p>
@@ -2834,7 +2981,7 @@
             continue;
           }
 
-          // Continuous Flow Paragraph Grouping
+          // F. Continuous Reflowable Body Paragraphs
           const paraLines = [curLine];
           lineIdx++;
           while (lineIdx < lines.length) {
@@ -2843,7 +2990,7 @@
             const prevL = paraLines[paraLines.length - 1];
             const gap = nextL.avgTopY - prevL.avgTopY;
             const sameLeft = Math.abs(nextL.items[0].x - prevL.items[0].x) < 25 || (prevL.items[0].x > nextL.items[0].x && Math.abs(nextL.items[0].x - 50) < 30);
-            const isNotSpecial = !isFormLine(nextL) && !(nextL.avgTopY > pHeightPt * 0.45 && nextL.items[0].x > pWidthPt * 0.42) && !/surat|keputusan|keterangan|nomor|laporan/i.test(nextText);
+            const isNotSpecial = !isFormLine(nextL) && !(nextL.items.length >= 2 && lineIdx + 1 < lines.length && areLinesInSameTable(nextL, lines[lineIdx + 1])) && !/surat|keputusan|keterangan|nomor|laporan|invoice/i.test(nextText);
 
             if (gap <= (prevL.items[0].fontSize || 12) * 1.85 && sameLeft && isNotSpecial) {
               paraLines.push(nextL);
@@ -2853,14 +3000,20 @@
             }
           }
 
-          // Emit continuous reflowable paragraph
-          const firstLineIndent = paraLines[0].items[0].x > 55 ? Math.min(1440, Math.round((paraLines[0].items[0].x - 50) * 20)) : 0;
+          let pJc = 'left';
+          if (Math.abs(lineCenter - (pWidthPt / 2)) < 35 && curText.length < 50) {
+            pJc = 'center';
+          } else if (pWidthPt - maxX < 50 && minX > pWidthPt * 0.45 && curText.length < 50) {
+            pJc = 'right';
+          }
+
+          const firstLineIndent = paraLines[0].items[0].x > 55 && paraLines[0].items[0].x < 150 ? Math.min(1440, Math.round((paraLines[0].items[0].x - 50) * 20)) : 0;
           docXmlBody += `
     <w:p>
       <w:pPr>
-        <w:jc w:val="both"/>
+        <w:jc w:val="${pJc}"/>
         ${firstLineIndent > 0 ? `<w:ind w:firstLine="${firstLineIndent}"/>` : ''}
-        <w:spacing w:before="0" w:after="140" w:line="276" w:lineRule="auto"/>
+        <w:spacing w:before="0" w:after="120" w:line="260" w:lineRule="auto"/>
       </w:pPr>`;
 
           for (let plIdx = 0; plIdx < paraLines.length; plIdx++) {
@@ -2877,7 +3030,7 @@
     </w:p>`;
         }
 
-        // C. Emit any unused body images
+        // G. Emit any unused body images
         const unusedImages = pageImages.filter(img => !img.used);
         for (const uImg of unusedImages) {
           docXmlBody += `
@@ -2916,10 +3069,11 @@
         }
       }
 
-      // Section properties
+      // Section properties with Landscape orientation support!
+      const orientAttr = lastIsLandscape ? ' w:orient="landscape"' : '';
       docXmlBody += `
     <w:sectPr>
-      <w:pgSz w:w="${lastPageWidthDxa}" w:h="${lastPageHeightDxa}"/>
+      <w:pgSz w:w="${lastPageWidthDxa}" w:h="${lastPageHeightDxa}"${orientAttr}/>
       <w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720"/>
     </w:sectPr>`;
 
