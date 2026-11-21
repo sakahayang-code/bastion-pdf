@@ -15,6 +15,8 @@
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
   <link rel="icon" type="image/png" href="icons/logo-emblem.png">
+  <!-- Kode Iklan Adsense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2614744427889767" crossorigin="anonymous"></script>
   <!-- Local Self-Hosted PDF-Lib, JSZip, and PDF.js with Multi-CDN Resilient Fallbacks -->
   <script src="js/pdf-lib.min.js"></script>
   <script src="js/jszip.min.js"></script>
@@ -518,6 +520,35 @@
       background: #ffffff;
       padding: 12px;
     }
+    /* Google AdSense Responsive Containers */
+    .multipdf-ad-box {
+      width: 100%;
+      max-width: 900px;
+      margin: 24px auto;
+      padding: 10px 14px;
+      background: #ffffff;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-card);
+      text-align: center;
+      min-height: 90px;
+      box-sizing: border-box;
+      overflow: hidden;
+      position: relative;
+    }
+    .multipdf-ad-box .ad-tag {
+      font-size: 10px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+      text-align: left;
+    }
+    .multipdf-ad-box ins.adsbygoogle {
+      display: block;
+      margin: 0 auto;
+    }
     /* Native Android PWA Bottom Navigation Bar */
     .mobile-bottom-nav {
       display: none;
@@ -637,6 +668,12 @@
         width: 100%;
         max-width: 480px;
         margin: 0 auto;
+      }
+      .multipdf-ad-box {
+        margin: 14px 0 !important;
+        padding: 8px 10px !important;
+        border-radius: 12px !important;
+        width: 100% !important;
       }
       .hero-header {
         margin-bottom: 14px;
@@ -1186,6 +1223,19 @@
           <div class="tool-card-desc">Encrypt sensitive PDF documents with AES passwords.</div>
         </div>
       </div>
+
+      <!-- Slot Iklan Adsense - Beranda MultiPDF -->
+      <div class="multipdf-ad-box">
+        <div class="ad-tag">Iklan / Sponsored</div>
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-2614744427889767"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>
+          try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
+        </script>
+      </div>
     </div>
 
     <!-- S02: Universal Ingestion Dropzone -->
@@ -1510,7 +1560,20 @@
             <button class="btn btn-secondary" style="flex: 1;" onclick="showScreen('screen-home')">↻ New Task</button>
           </div>
 
-          <div style="margin-top: 24px; border-top: 1px solid var(--color-border); padding-top: 18px;">
+          <!-- Slot Iklan Adsense - Download Screen -->
+          <div class="multipdf-ad-box" style="margin: 16px 0 8px 0; border-radius: 12px; min-height: 80px;">
+            <div class="ad-tag">Iklan / Sponsored</div>
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-2614744427889767"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+            <script>
+              try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch(e) {}
+            </script>
+          </div>
+
+          <div style="margin-top: 16px; border-top: 1px solid var(--color-border); padding-top: 18px;">
             <button class="btn btn-ghost" style="color: var(--color-danger); font-size: 13px; width: 100%;" onclick="triggerHardPurge()">
               🗑️ Delete it now (Zero-trace instant purge)
             </button>

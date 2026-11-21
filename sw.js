@@ -1,5 +1,5 @@
 // MultiPDF Android PWA Service Worker
-const CACHE_NAME = 'multipdf-v2';
+const CACHE_NAME = 'multipdf-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -45,6 +45,11 @@ self.addEventListener('activate', (event) => {
 // Fetch Event - Stale-while-revalidate / Network-first fallback
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+
+  // Let external requests (Google AdSense, CDNs, etc.) pass through directly
+  if (!event.request.url.startsWith(self.location.origin)) {
+    return;
+  }
 
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
