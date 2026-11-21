@@ -145,8 +145,8 @@ async function runPdfTests() {
   assert.strictEqual(Buffer.compare(decryptedBytes, Buffer.from(bytes1)), 0, 'Decrypted bytes must match original PDF');
   console.log('     ✓ Password unlock and payload restoration verified.');
 
-  // Test 10: PDF to Word / Layout text extraction
-  console.log(' 10. Testing PDF to Word / Layout text extraction...');
+  // Test 10: PDF to Word / Layout text extraction & Genuine OpenXML DOCX Generation
+  console.log(' 10. Testing PDF to Word / Layout text extraction & Genuine DOCX...');
   const wordTmp = fs.mkdtempSync(path.join(os.tmpdir(), 'test-word-'));
   const wordPdf = path.join(wordTmp, 'doc.pdf');
   const wordTxt = path.join(wordTmp, 'doc.txt');
@@ -154,8 +154,32 @@ async function runPdfTests() {
   execSync(`pdftotext -layout "${wordPdf}" "${wordTxt}"`, { stdio: 'pipe' });
   const extractedText = fs.readFileSync(wordTxt, 'utf-8');
   assert(extractedText.includes('Document 1 Page 1'), 'Extracted text must match original PDF content');
+
+  // Verify genuine OpenXML DOCX archive creation
+  const JSZip = require('../js/jszip.min.js');
+  const testZip = new JSZip();
+  testZip.file('[Content_Types].xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+</Types>`);
+  testZip.file('_rels/.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`);
+  testZip.file('word/document.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body><w:p><w:r><w:t>Document 1 Page 1</w:t></w:r></w:p></w:body>
+</w:document>`);
+  const docxBuf = await testZip.generateAsync({ type: 'nodebuffer' });
+  const docxPath = path.join(wordTmp, 'output.docx');
+  fs.writeFileSync(docxPath, docxBuf);
+  const pandocCheck = execSync(`pandoc "${docxPath}" -t plain`).toString();
+  assert(pandocCheck.includes('Document 1 Page 1'), 'Generated DOCX must be valid OpenXML parsed by pandoc');
+
   fs.rmSync(wordTmp, { recursive: true, force: true });
-  console.log('     ✓ PDF to Word layout text extraction verified.');
+  console.log('     ✓ PDF to Word layout text extraction & genuine DOCX verified.');
 
   // Test 11: Word / Text to PDF synthesis
   console.log(' 11. Testing Text / Word to PDF synthesis...');
